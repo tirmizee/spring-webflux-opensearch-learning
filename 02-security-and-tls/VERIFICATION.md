@@ -1,93 +1,119 @@
-# Chapter 02 — Security and TLS verification
+# Chapter 02 — Transport factory, pool, timeout และ test fixture verification
 
-Overall: **Verified** สำหรับ cluster metadata/health ผ่าน Spring Data reactive-client tier และ official async client บน environment ด้านล่าง ไม่ใช่ production certification หรือผลทุก platform
+Overall: **Verified** สำหรับ local scope ที่ระบุ ผลก่อน refactoring อยู่ใน [historical Apache migration report](verification/apache-migration-2026-10-25.md) ไม่ใช่หลักฐาน source ใหม่
 
-## Plan และ REVIEW
+## Scope และ source state
 
-- Approved plan: Chapter 02 Security and TLS ใน conversation นี้ ผู้ใช้ตอบ “approve” เมื่อ 2026-10-25 รวม standalone Maven project, สอง paths, strict CA/hostname validation, least privilege, tests/Compose/README และ Boot-managed JUnit 6 ไม่อนุญาต commit/push
-- REVIEW ทำแบบ read-only เทียบ approved objectives/API/security/tests ก่อน final VERIFY ไม่ใช้ diagnostic test run แทน review
-- P2 ที่พบ: OpenSearchConfiguration.java เดิมบรรทัด 36 ใช้ stripTrailing() ซึ่งเปลี่ยน password spaces; กลับ IMPLEMENT แก้เป็น readPassword() ที่ตัด final LF/CRLF หนึ่งชุด มี regression assertion ว่า spaces คงเดิมและ multiline ถูกปฏิเสธ
-- P2 ที่พบ: SecureOpenSearchTestEnvironment.java เดิมบรรทัด 34–39 ไม่ cleanup partial material เมื่อ preparation fail/timeout; แก้ให้หยุด child processes และลบ material ของ test ก่อน throw
-- REVIEW ซ้ำหลัง fixes: ไม่พบ unresolved findings ใน approved scope ตรวจ ownership, HTTPS-only properties, endpoint-scoped credentials, strict hostname verification, lazy calls, typed sanitized errors และ coverage ของสอง paths แล้ว
+ผู้ใช้อนุมัติ refactoring เจ็ดข้อใน conversation นี้: แยก OpenSearchTransportFactory, configurable bounded pool, timeout-order validation, password lifecycle documentation, tool-free unit certificate fixture, integration test helpers และ actual verification evidence ไม่เปลี่ยน API contracts/dependencies หรือ chapter อื่น ไม่ commit/push
 
-## Source และ environment
+- Base revision: `866cb87aff1ccea1062b290aa51281cb1bbd0f26`; branch `codex/chapter-02-security-and-tls`
+- Working tree เป็น dirty รวม tracked modifications และ untracked source/tests/fixture/reports; base revision อย่างเดียวไม่ระบุ source ที่ทดสอบ
+- Runnable source 47 files SHA-256: `0a19057d4f0f8d97b766a00e029c89a8df8d77b1c4b10d1cbe1a73175db6bbd4`
+- Packaged JAR SHA-256: `68ffe082ff87f0fec5c1a9974dea8b20e09ee0cde9ebff28c55225df173af881`
+- Fingerprint คำนวณจาก `git ls-files --cached --others --exclude-standard -- 02-security-and-tls` ตัดซ้ำ/เรียง paths แล้ว hash `chapter-relative path + NUL + bytes + NUL` ทุก non-Markdown file รวม untracked Java และ public PEM fixture ไม่รวม ignored outputs/secrets/target
+- หลัง final build เปลี่ยนเฉพาะ Markdown report/README ไม่มี runtime/config/test changes
 
-- Recorded: 2026-10-25T13:55:30+07:00 (Asia/Bangkok)
-- Base commit: 0aa84f6aef54506cbe065f115551e384e2b7dd3d; branch codex/chapter-development-workflow มี untracked Chapter 02 และแก้ CI matrix/roadmap ยังไม่ commit/push
-- Runnable-source SHA-256: `8f0a8519533a3b40f39350b7343431920c3062bdd18beffb979d0e919b078ace`
-- Fingerprint ครอบคลุม 42 runnable/config/test/script/Wrapper files ของบทจาก git ls-files --cached --others --exclude-standard เรียง chapter-relative paths แล้ว hash `path + NUL + bytes + NUL` ไม่รวม Markdown และ ignored generated material/build outputs ส่วน CI/roadmap ตรวจ diff แยก
-- Packaged JAR SHA-256: `04bc9b1d0c80f59f0a35084d9bc09ea715b05ba1b3a211e1e0dd82c0fd037f7f`
-- macOS 27.0.1 (26A434), arm64; Temurin 21.0.12.1+1; Maven 3.9.11, Wrapper 3.3.4
-- Docker Engine 29.8.2 / Compose 5.6.0; LibreSSL 3.3.6; jq 1.7.1-apple
-- Server image: opensearchproject/opensearch:3.9.0, observed arm64 digest `sha256:adfa61f85025d06b4aeb562e7e74fde7e31c437039c93c3862c17e9acebd6c7c`
-- Resolved: Boot 4.1.2 / Framework 7.0.10; Spring Data OpenSearch 3.1.4 / Spring Data Elasticsearch 6.1.2; official client 3.10.0; HttpClient 5.6.5 / HttpCore 5.4.4; Jackson 3.1.7; JUnit Jupiter 6.0.3 / Mockito 5.23.0 / Testcontainers 2.0.5
-- Classpath ยังมี Jackson 2.21.7 runtime และ low-level opensearch-rest-client transitive; application เลือก Jackson 3 + Apache transport โดย explicit configuration ไม่อ้างว่ามี Jackson major เดียว
+## Environment และ dependencies — PASS
 
-## Commands และ final gates
+รัน `./mvnw -version`, `uname -sm`, `sw_vers -productVersion`, `docker version --format '{{.Server.Version}}'`, `docker compose version --short` และ `docker image inspect opensearchproject/opensearch:3.9.0 --format '{{index .RepoDigests 0}}'`
 
-Working directory ของคำสั่งคือ `02-security-and-tls/` ใช้ JDK 21 ผ่าน JAVA_HOME ที่ระบุข้างต้น Final Maven command จริง:
+Observed: macOS 27.0.1 arm64, Temurin 21.0.12.1, Maven 3.9.11; Docker 29.8.2, Compose 5.6.0, local Docker Desktop socket
+
+Image: `opensearchproject/opensearch:3.9.0`; digest `opensearchproject/opensearch@sha256:adfa61f85025d06b4aeb562e7e74fde7e31c437039c93c3862c17e9acebd6c7c`
+
+รันจาก chapter directory ด้วย `JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home`:
+
+```bash
+./mvnw -B -ntp org.apache.maven.plugins:maven-dependency-plugin:3.10.0:tree \
+  -DoutputFile=target/dependency-tree.txt \
+  org.apache.maven.plugins:maven-help-plugin:3.5.2:effective-pom \
+  -Doutput=target/effective-pom.xml
+```
+
+Exit 0, BUILD SUCCESS, finished 2026-10-25T22:13:17+07:00; log `/private/tmp/ch02-foundation-dependencies.log` และ generated reports ใน `target/`
+
+Resolved: Spring Data OpenSearch 3.1.4, official client 3.10.0, HttpClient 5.6.5/HttpCore 5.4.4, JUnit 6.0.3, Mockito 5.23.0, Testcontainers 2.0.5; ไม่เปลี่ยน POM หรือเพิ่ม dependency เช่น BouncyCastle
+
+## Maven compilation/tests — PASS
 
 ```bash
 env JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home \
   ./mvnw -B -ntp clean verify \
-  org.apache.maven.plugins:maven-dependency-plugin:3.10.0:tree -DoutputFile=target/dependency-tree.txt \
-  org.apache.maven.plugins:maven-help-plugin:3.5.2:effective-pom -Doutput=target/effective-pom.xml
+  -Dmaven.compiler.showDeprecation=true -Dmaven.compiler.failOnWarning=true
 ```
 
-| Gate | Actual command / observed result | Status |
-|---|---|---|
-| Build/unit/HTTP | Final Maven command exit 0, BUILD SUCCESS, 43 Surefire tests | PASS |
-| Secure IT | Failsafe 7 tests ต่อ OpenSearch จริง บน random mapped ports ไม่พึ่ง Compose | PASS |
-| Dependencies | dependency tree/effective POM สร้างจริงใน target/; exact APIs compile และ runtime ผ่าน | PASS |
-| Prepare | bash scripts/prepare-security.sh exit 0; ทดลองซ้ำกับ output เดิม exit 2 โดยไม่ regenerate | PASS |
-| Compose | cp .env.example .env; docker compose config --quiet; docker compose up -d opensearch; ps แสดง healthy | PASS |
-| Bootstrap | bash scripts/initialize-security.sh exit 0; securityadmin แสดง Done with success และ authenticated readiness ผ่าน ไม่มี -nhnv | PASS |
-| Packaged application | java -jar target/security-and-tls.jar เริ่ม Netty ที่ loopback 8082 ใช้ CA/app identity จาก files | PASS |
-| Native examples | Monitor info=200, invalid password=401, info-only health=403, monitor PUT /ch02-forbidden-index=403 และ security_exception | PASS |
-| Healthy API | bash scripts/smoke-test.sh healthy: four routes 200, field assertions และ info/health parity ผ่าน | PASS |
-| Missing permissions | Restart app ด้วย ch02_info_only + info.password; smoke insufficient-permissions: info 200, health 502/OPENSEARCH_AUTHORIZATION_FAILED ทั้งสอง paths | PASS |
-| Invalid credentials | Restart app ด้วย invalid.password; smoke invalid-credentials: four routes 502/OPENSEARCH_AUTHENTICATION_FAILED พร้อม parity | PASS |
-| Wrong CA | Restart app ด้วย unrelated-ca.pem; smoke tls-failure: four routes 502/OPENSEARCH_TLS_FAILURE พร้อม parity | PASS |
-| Wrong hostname | ใช้ mismatch.pem จาก CA เดียวกันแทน generated HTTP leaf ชั่วคราวและ restart owned Compose node; cURL exit 60; packaged smoke tls-failure ผ่าน four routes แล้ว restore original leaf/restart และ healthy smoke ผ่านอีกครั้ง | PASS |
-| Dependency unavailable | docker compose stop opensearch; smoke unavailable: four routes 503/OPENSEARCH_UNAVAILABLE พร้อม parity; start และรอ authenticated 200 สำเร็จ | PASS |
-| Deadline/cancellation | Unit StepVerifier virtual-time/controllable futures ทั้งสอง services; ไม่อ้าง network-abort หรือ runtime outage timeout จาก unit proof | PASS |
-| Cleanup | Owned JAR processes ปิดแล้ว; docker compose down ลบ container/network ของบท ไม่มี running containers จากงาน; เก็บ os-learning-ch02_opensearch-data และ ignored generated certificates ไว้ | PASS |
-
-Packaged failure modes เริ่ม JAR ใหม่ทีละ process ด้วย variables ตาม README และหยุด/รอ child process หลังแต่ละ mode ไม่แก้ credentials ผ่าน API Hostname exercise เปลี่ยนเฉพาะ generated material ของงานและ restore bytes เดิม ไม่แก้ tracked configuration
-
-## Suite counts
+Exit 0, BUILD SUCCESS, finished `2026-10-25T22:09:33+07:00`, elapsed 01:32 min; log `/private/tmp/ch02-foundation-verify.log` ตรวจ XML counts จริง:
 
 | Suite | Tests | Failures | Errors | Skipped |
 |---|---:|---:|---:|---:|
-| OpenSearchConfigurationTest | 2 | 0 | 0 | 0 |
-| OpenSearchPropertiesTest | 9 | 0 | 0 | 0 |
-| OpenSearchTlsContextFactoryTest | 2 | 0 | 0 | 0 |
-| ClusterConnectionControllerTest | 12 | 0 | 0 | 0 |
-| ApiExceptionHandlerTest | 4 | 0 | 0 | 0 |
-| JavaClientClusterConnectionServiceTest | 7 | 0 | 0 | 0 |
-| SpringDataClusterConnectionServiceTest | 7 | 0 | 0 | 0 |
-| OpenSearchTlsFailureIT | 1 | 0 | 0 | 0 |
-| SecureOpenSearchConnectionIT | 6 | 0 | 0 | 0 |
-| Total | 50 | 0 | 0 | 0 |
+| Surefire unit/HTTP/reactive/configuration | 60 | 0 | 0 | 0 |
+| Failsafe real OpenSearch integration | 7 | 0 | 0 | 0 |
+| Total | 67 | 0 | 0 | 0 |
 
-## Coverage และ evidence locations
+- Pool tests: positive/zero/negative/invalid order, default 16/16, custom 8/2 binding และ invalid startup
+- Timeout tests: request > response, equality, request < response และ startup rejection
+- Unit tests โหลด public CA จาก classpath ไม่เรียก OpenSSL/Bash/Docker ไม่มี Assumptions/disabled/skipped tests
+- Real ITs คง native 401/403/denied index creation, four routes บน success/credentials/permissions/CA, trusted-but-wrong-SAN failure, parity, separate transports, template/converter wiring, lazy real-client spies และ client calls ที่ fail หลัง context ปิด
+- Strict main/test compilation ผ่านโดยไม่ suppress deprecation warnings JVM dynamic-agent/macOS Netty DNS fallback diagnostics ยังเกิดตาม environment ไม่อ้างว่า runtime logs ไม่มี warnings ทุกชนิด
 
-- Spring Data reactive และ official async ผ่าน real metadata/health HTTP tests ด้วย monitor/info-only/invalid credentials และ wrong CA ตรวจ normalized DTO/error parity ทั้งสอง prefixes
-- Selected-client real spies ตรวจ no invocation ก่อน subscribe และแต่ละ service ใช้ client ของตัวเอง พร้อม shared transport identity และ shutdown behavior
-- Hostname IT ใช้ valid leaf ที่ CA signature ถูกต้อง แต่ SAN เป็น wrong.invalid ตรวจ TLS cause และ mapped 502 ของสอง services โดยไม่ bypass verification
-- Native monitor identity ถูกปฏิเสธ index creation ไม่มี document dataset หรือ successful index write ในบทนี้
-- Surefire/Failsafe XML อยู่ใน `target/surefire-reports/` และ `target/failsafe-reports/` เป็น local generated evidence ไม่ commit
-- Dependency tree/effective POM อยู่ใน `target/` ไม่ commit
-- Raw run logs เป็น local ephemeral files: `/private/tmp/ch02-final-verify.log`, `/private/tmp/ch02-bootstrap.log`, `/private/tmp/ch02-smoke-healthy.log`, `/private/tmp/ch02-smoke-insufficient-permissions.log`, `/private/tmp/ch02-smoke-invalid-credentials.log`, `/private/tmp/ch02-smoke-tls-failure.log`, `/private/tmp/ch02-smoke-hostname-mismatch.log`, `/private/tmp/ch02-smoke-unavailable.log`, `/private/tmp/ch02-smoke-healthy-restored.log`
-- ตรวจ real generated passwords ไม่อยู่ใน intended tracked files และ logs ของงาน; keys/password files/target ถูก ignore; ไม่มี Chapter 01 diff
+Diagnostic ก่อน full run: `./mvnw -B -ntp test -Dmaven.compiler.showDeprecation=true -Dmaven.compiler.failOnWarning=true` ใน sandbox **FAIL** เพราะ Mockito inline agent attach ใช้ไม่ได้ ไม่ใช่เหตุผล skip tests รัน full command ด้านบนด้วย permissions ที่รองรับแล้วผ่าน Log diagnostic `/private/tmp/ch02-foundation-unit.log`
 
-## Failures/retests และ limitations
+## Compose และ packaged smoke
 
-- Unit diagnostic แรก: 42 tests, 2 failures เพราะ copied HTTP tests ยัง assert Chapter 01 timeout title แก้ assertions ให้ตรวจ OPENSEARCH_TIMEOUT ตาม Chapter 02 contract แล้ว diagnostic verify ผ่าน 42+7; หลัง review fixes final clean verify ผ่าน 43+7
-- Temporary smoke orchestration helper เคยรายงาน owned process ยังไม่หยุดจาก PID probe หลัง TERM แต่ exec session ยืนยัน exit 143 และ graceful-shutdown log พร้อม port 8082 ปิดแล้ว จึงรัน remaining scenarios ด้วย child-process wait สำเร็จ ไม่ใช่ application/test failure และไม่มีการลด assertions
-- มี JVM dynamic-agent warning และ Netty macOS native DNS fallback warning ใน environment นี้ ทั้งสองไม่ทำให้ gates fail ไม่อ้างผลบน Linux/amd64 หรือ remote Docker
-- Fixture-preparation failure/timeout cleanup ตรวจจาก source; ไม่ได้ fault-inject ทุก OS process failure branch
-- Local keys มี host parent 0700 แต่ mounted files ต้องอ่านได้โดย container user; ไม่ใช่ production secret manager, PKI หรือ shared-host isolation guarantee
-- Future cancellation ไม่รับประกัน server-side cancellation; ไม่ทดสอบ certificate rotation, multi-node HA, production load หรือ application-facing TLS/authentication
-- GitHub-hosted CI: **NOT VERIFIED** ยังไม่ push/run workflow การเพิ่ม matrix entry ไม่ใช่ hosted CI pass
-- REVIEW และ required local gates ผ่านบน runnable source fingerprint ที่ระบุ จึงตั้ง roadmap เป็น Verified เฉพาะ scope/platform นี้
+รัน `docker compose config --quiet` exit 0, `docker compose ps` แสดง existing `os-learning-ch02-opensearch-1` healthy บน loopback 9202; `bash -n scripts/prepare-security.sh scripts/initialize-security.sh scripts/smoke-test.sh` exit 0
+
+ใช้ existing Compose CA/identities โดยไม่ regenerate/initialize security หรือหยุด resources เดิม Real ITs สร้าง/initialize isolated OpenSearch ของตัวเอง ไม่ใช้ Compose เป็น IT fixture
+
+Packaged command: Java 21 `java -jar target/security-and-tls.jar`, `APP_PORT` random loopback, `BASE_URL` ตรงกัน แล้ว `bash scripts/smoke-test.sh <mode>` Temporary driver `/private/tmp/ch02-foundation-smoke.py` เป็น local orchestration เท่านั้น ไม่เพิ่ม scripts/framework ลง repository
+
+| Scenario | Overrides จาก default README | Smoke mode |
+|---|---|---|
+| Healthy | OPENSEARCH_MAX_CONNECTIONS=8; OPENSEARCH_MAX_CONNECTIONS_PER_ROUTE=2 | healthy |
+| Permissions | OPENSEARCH_USERNAME=ch02_info_only; OPENSEARCH_PASSWORD_FILE=certs/generated/secrets/info.password | insufficient-permissions |
+| Credentials | OPENSEARCH_PASSWORD_FILE=certs/generated/secrets/invalid.password | invalid-credentials |
+| CA | OPENSEARCH_CA_CERTIFICATE=certs/generated/public/unrelated-ca.pem | tls-failure |
+| Unavailable | OPENSEARCH_URI=https://localhost:1 | unavailable |
+| Hostname | Isolated temporary server: trusted CA แต่ copied mismatch leaf/key; random HTTPS port; native cURL exit 60 ก่อนทดสอบ | tls-failure |
+
+Logs: `/private/tmp/ch02-foundation-app-{healthy,permissions,credentials,ca,unavailable,hostname}.log` และ `/private/tmp/ch02-foundation-smoke-{healthy,permissions,credentials,ca,unavailable,hostname}.log`
+
+## ข้อจำกัด
+
+- Unit fixture มี public certificate เท่านั้น disposable private keystore ถูกลบแล้ว Provenance/validity/fingerprint อยู่ใน [fixture documentation](src/test/resources/certs/README.md)
+- Metadata endpoints ใช้ reactive-client tier; template/converter wiring ไม่พิสูจน์ CRUD/repository mapping round-trip
+- Timeout validation ไม่พิสูจน์ transport abort/server cancellation หรือ production latency ภายใต้ load; configurable pool ไม่ใช่ application request concurrency limit
+- Password String/credential copies ใน heap ยังเป็นข้อจำกัดตาม README ไม่มี guarantee ว่าล้างทุกสำเนาได้
+- Full IT/setup ยังต้องมี Bash/OpenSSL/Docker; Windows/WSL/remote Docker และ OS อื่น **NOT VERIFIED** ไม่ skip เพื่อประกาศผ่าน
+- Fresh Compose setup/teardown ไม่รันซ้ำกับ resources เดิมของผู้ใช้ ใช้ isolated IT setup และ existing Compose packaged scenarios ตาม scope ของ refactoring
+- GitHub-hosted CI **NOT VERIFIED** ไม่ commit/push หรือ dispatch workflow
+
+## Final REVIEW และ gates
+
+Workflow: IMPLEMENT → VERIFY → REVIEW ตาม user-authorized refactoring scope ใช้ review-chapter แบบ read-only หลัง runtime checks ตรวจ dirty source state, factory/configuration separation, qualifiers/close owners, validation, strict TLS/credentials, unit fixture provenance, IT assertions/parity และ README ไม่พบ actionable findings ค้างใน scope ไม่ใช้ source inspection แทน runtime evidence
+
+| Gate | Result |
+|---|---|
+| Strict compile + unit/HTTP tests + real OpenSearch ITs | PASS: 67 tests, 0 failures/errors/skips |
+| Packaged JAR smoke | PASS: healthy/custom pool, permissions, credentials, CA, unavailable, hostname; four routes และ two parity comparisons ต่อ scenario |
+| Compose config/readiness | PASS: config --quiet และ existing healthy Compose cluster |
+| Dependencies/effective POM/environment | PASS ตาม commands/results ด้านบน |
+| Source/JAR/fixture hashes และ local Markdown links | PASS |
+| Actual generated passwords/encoded Basic credentials ใน intended chapter files และ foundation logs | PASS: ไม่พบ |
+| Resource cleanup | PASS: owned JAR processes terminated/waited; temporary hostname container/copied keys และ ephemeral IT keys cleanup; disposable fixture keystore removed; existing Compose preserved |
+| Scope และ diff formatting | PASS: git diff --check; ไม่มี modifications นอก Chapter 02 |
+| Windows/WSL/remote Docker, production load/rotation, hosted CI | NOT VERIFIED |
+
+No dependency additions, no commit/push. Base revision เป็น context เท่านั้น source fingerprint รวม dirty/untracked files คือหลักฐาน source ของ run นี้
+
+Recorded: 2026-10-25T22:15:07+07:00
+
+## PR publication provenance
+
+หลังผู้ใช้สั่งเปิด PR สร้าง branch `codex/chapter-02-transport-refactoring` จาก `origin/main` revision `053367a9f5e1c9ba4c0b77b5acadc5d2151a4082` ซึ่งมี runnable tree เดียวกับ base revision ของ tests ด้านบน การอนุญาต commit/push เกิดหลัง verification ไม่ได้แก้ข้อความ historical runs ให้กลายเป็น runs ใหม่
+
+Git normalize public `src/test/resources/certs/unit-ca.pem` จาก CRLF เป็น LF ใน index ตรวจ byte comparison แล้วต่างเฉพาะ line endings; certificate DER/fingerprint ไม่เปลี่ยน ไม่มี Java/config/test behavior changes และไม่ได้อ้างว่ารันทดสอบ 67 tests ใหม่หลัง staging
+
+- Tested working-tree fingerprint เดิม: `0a19057d4f0f8d97b766a00e029c89a8df8d77b1c4b10d1cbe1a73175db6bbd4`
+- Published index runnable-source fingerprint: `495e8e9ed8b31bba5bdbe16cac304177a69e2ad1d87db963b59790002f182d42`
+- Index ใช้อัลกอริทึม paths เดิม แต่ hash bytes จาก `git show :<path>` ของทุก non-Markdown file รวม source/fixture ใหม่ที่ stage แล้ว
+- Test JAR hash และ local results ด้านบนยังเป็น artifact ของ original test run Hosted CI status ต้องอ่านจาก PR แยก ไม่เปลี่ยน report ให้เป็น PASS ล่วงหน้า

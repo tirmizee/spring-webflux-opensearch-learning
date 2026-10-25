@@ -1,8 +1,8 @@
 # Chapter 02 — Security and TLS
 
-บทนี้เรียน HTTPS, certificate trust, hostname verification, authentication และ least privilege ผ่าน **Spring Data OpenSearch reactive client** และ **official OpenSearchAsyncClient** ทั้งสอง paths ใช้ async transport เดียวกัน แต่เรียกคนละ client จริง ไม่มี dependency ไป Chapter 01
+บทนี้เรียน HTTPS, certificate trust, hostname verification, authentication และ least privilege ผ่าน **Spring Data OpenSearch reactive client** และ **official OpenSearchAsyncClient** ทั้งสอง paths ใช้ configuration และ async transport แยกกันตามแนวทางของแต่ละ library ภายใต้ CA/credentials/security contract เดียวกัน ไม่มี dependency ไป Chapter 01
 
-สถานะ: **Verified สองแนวทาง** ตามผลและขอบเขตใน [VERIFICATION.md](VERIFICATION.md) ห้ามถือ version table หรือ illustrative response เป็น runtime evidence
+สถานะ: **Verified สอง configuration paths** ตามผลและขอบเขตใน [VERIFICATION.md](VERIFICATION.md) ห้ามถือ version table หรือ illustrative response เป็น runtime evidence
 
 ## Learning objectives และ scope
 
@@ -10,7 +10,7 @@
 - แยก trust chain ออกจาก hostname/SAN verification และพิสูจน์ negative cases
 - ใช้ application identity ที่อ่าน metadata ได้ แต่ไม่มี index/admin privileges
 - เปรียบเทียบ native upstream 401/403 กับ normalized application errors
-- รักษา reactive laziness, deadlines, cancellation limits และ single transport ownership
+- รักษา reactive laziness, deadlines, cancellation limits และ explicit transport ownership ของแต่ละ path
 
 Prerequisites: Java records, Mono, HTTP และ X.509 เบื้องต้น ไม่ต้องรันบทอื่น ไม่มี document dataset/mappings/CRUD ในบทนี้ และไม่สอน OAuth/OIDC, SigV4, production CA/rotation หรือ multi-node cluster Application-facing HTTP bind loopback สำหรับเรียน ส่วน HTTPS เป็นเส้นทาง application → OpenSearch เท่านั้น ไม่ใช่ production deployment template
 
@@ -27,9 +27,9 @@ Prerequisites: Java records, Mono, HTTP และ X.509 เบื้องต้
 | Jackson 3 / HttpClient 5 | Boot/client graph; ดู resolved evidence ใน VERIFICATION |
 | Test platform | Boot-managed JUnit 6, Mockito, Testcontainers 2.0.5 |
 
-ผู้ใช้อนุมัติ baseline/JUnit 6 ของบทนี้พร้อมแผน ไม่มี override JUnit engine/API ลงเป็น 5 ใช้ Spring Data core พร้อม explicit beans และ exclude high-level REST client เหมือน Chapter 01 ไม่ใช้ Spring Data starter/default RestClient transport
+ผู้ใช้อนุมัติ baseline/JUnit 6 ของบทนี้พร้อมแผน ไม่มี override JUnit engine/API ลงเป็น 5 ใช้ Spring Data core พร้อม explicit reactive client/template beans และ inherited mapping converter พร้อม exclude high-level REST client ไม่ใช้ starter auto-configuration ส่วน official path สร้าง direct Apache transport แยกต่างหาก
 
-ต้องมี JDK 21, Bash, Docker Engine/Compose, OpenSSL, cURL และ jq; Maven Wrapper ดาวน์โหลด dependencies ครั้งแรก Tests ต้องใช้ Docker และ OpenSSL จริง ไม่ skip integration tests เมื่อ Docker ไม่พร้อม Secure ITs ตรวจบน local Docker โดย certificate SAN ครอบคลุม localhost, 127.0.0.1 และ opensearch; remote Docker host ต้องปรับ test certificates ตาม hostname จริงก่อน ไม่ปิด verification
+ต้องมี JDK 21, Bash, Docker Engine/Compose, OpenSSL, cURL และ jq; Maven Wrapper ดาวน์โหลด dependencies ครั้งแรก Unit/HTTP tests (`./mvnw test`) ใช้ JDK/Maven และ public [test CA fixture](src/test/resources/certs/README.md) ไม่เรียก Bash/OpenSSL/Docker; `./mvnw clean verify` รวม integration tests ที่ต้องใช้ Bash, Docker และ OpenSSL จริง ไม่ skip integration tests เมื่อ Docker ไม่พร้อม Secure ITs ตรวจบน local Docker โดย certificate SAN ครอบคลุม localhost, 127.0.0.1 และ opensearch; remote Docker host ต้องปรับ test certificates ตาม hostname จริงก่อน ไม่ปิด verification
 
 ## Concepts และ identities
 
@@ -49,6 +49,14 @@ TLS ตรวจสองเรื่องแยกกัน: certificate chain
 02-security-and-tls/
 ├── .env.example
 ├── .gitignore
+├── .idea/
+│   ├── .gitignore
+│   ├── compiler.xml
+│   ├── encodings.xml
+│   ├── jarRepositories.xml
+│   ├── misc.xml
+│   ├── vcs.xml
+│   └── workspace.xml
 ├── .mvn/
 │   └── wrapper/
 │       └── maven-wrapper.properties
@@ -75,58 +83,77 @@ TLS ตรวจสองเรื่องแยกกัน: certificate chain
 │   ├── initialize-security.sh
 │   ├── prepare-security.sh
 │   └── smoke-test.sh
-└── src/
-    ├── main/
-    │   ├── java/
-    │   │   └── com/
-    │   │       └── example/
-    │   │           └── learning/
-    │   │               └── opensearch/
-    │   │                   └── securitytls/
-    │   │                       ├── SecurityTlsApplication.java
-    │   │                       ├── config/
-    │   │                       │   ├── OpenSearchConfiguration.java
-    │   │                       │   ├── OpenSearchProperties.java
-    │   │                       │   └── OpenSearchTlsContextFactory.java
-    │   │                       ├── controller/
-    │   │                       │   ├── JavaClientClusterConnectionController.java
-    │   │                       │   └── SpringDataClusterConnectionController.java
-    │   │                       ├── dto/
-    │   │                       │   ├── ClusterHealthResponse.java
-    │   │                       │   └── ClusterInfoResponse.java
-    │   │                       ├── exception/
-    │   │                       │   └── ApiExceptionHandler.java
-    │   │                       └── service/
-    │   │                           ├── JavaClientClusterConnectionService.java
-    │   │                           └── SpringDataClusterConnectionService.java
-    │   └── resources/
-    │       └── application.yml
-    └── test/
-        └── java/
-            └── com/
-                └── example/
-                    └── learning/
-                        └── opensearch/
-                            └── securitytls/
-                                ├── config/
-                                │   ├── OpenSearchConfigurationTest.java
-                                │   ├── OpenSearchPropertiesTest.java
-                                │   └── OpenSearchTlsContextFactoryTest.java
-                                ├── controller/
-                                │   └── ClusterConnectionControllerTest.java
-                                ├── exception/
-                                │   └── ApiExceptionHandlerTest.java
-                                ├── integration/
-                                │   ├── OpenSearchTlsFailureIT.java
-                                │   └── SecureOpenSearchConnectionIT.java
-                                ├── service/
-                                │   ├── JavaClientClusterConnectionServiceTest.java
-                                │   └── SpringDataClusterConnectionServiceTest.java
-                                └── support/
-                                    └── SecureOpenSearchTestEnvironment.java
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── example/
+│   │   │           └── learning/
+│   │   │               └── opensearch/
+│   │   │                   └── securitytls/
+│   │   │                       ├── SecurityTlsApplication.java
+│   │   │                       ├── config/
+│   │   │                       │   ├── OpenSearchConfiguration.java
+│   │   │                       │   ├── OpenSearchPasswordFile.java
+│   │   │                       │   ├── OpenSearchProperties.java
+│   │   │                       │   ├── OpenSearchTransportFactory.java
+│   │   │                       │   ├── OpenSearchTlsContextFactory.java
+│   │   │                       │   └── SpringDataOpenSearchConfiguration.java
+│   │   │                       ├── controller/
+│   │   │                       │   ├── JavaClientClusterConnectionController.java
+│   │   │                       │   └── SpringDataClusterConnectionController.java
+│   │   │                       ├── dto/
+│   │   │                       │   ├── ClusterHealthResponse.java
+│   │   │                       │   └── ClusterInfoResponse.java
+│   │   │                       ├── exception/
+│   │   │                       │   └── ApiExceptionHandler.java
+│   │   │                       └── service/
+│   │   │                           ├── JavaClientClusterConnectionService.java
+│   │   │                           └── SpringDataClusterConnectionService.java
+│   │   └── resources/
+│   │       └── application.yml
+│   └── test/
+│       ├── java/
+│           └── com/
+│               └── example/
+│                   └── learning/
+│                       └── opensearch/
+│                           └── securitytls/
+│                               ├── config/
+│                               │   ├── OpenSearchConfigurationTest.java
+│                               │   ├── OpenSearchPropertiesTest.java
+│                               │   ├── OpenSearchTlsContextFactoryTest.java
+│                               │   └── SpringDataOpenSearchConfigurationTest.java
+│                               ├── controller/
+│                               │   └── ClusterConnectionControllerTest.java
+│                               ├── exception/
+│                               │   └── ApiExceptionHandlerTest.java
+│                               ├── integration/
+│                               │   ├── OpenSearchTlsFailureIT.java
+│                               │   └── SecureOpenSearchConnectionIT.java
+│                               ├── service/
+│                               │   ├── JavaClientClusterConnectionServiceTest.java
+│                               │   └── SpringDataClusterConnectionServiceTest.java
+│                               └── support/
+│                                   └── SecureOpenSearchTestEnvironment.java
+│       └── resources/
+│           └── certs/
+│               ├── README.md
+│               └── unit-ca.pem
+└── verification/
+    ├── apache-migration-2026-10-25.md
+    ├── connection-timeout-2026-10-25.md
+    ├── framework-configuration-2026-10-25.md
+    └── shared-transport-2026-10-25.md
 ```
 
-`OpenSearchConfiguration` อ่าน CA/password files ตอน startup สร้าง bounded async connection pool และ endpoint-scoped credentials ปิด redirects และ automatic retries `OpenSearchTlsContextFactory` สร้าง SSLContext เฉพาะ transport ไม่แก้ global JVM defaults Hostname verification เปิดทั้ง JSSE และ client verifier
+`SpringDataOpenSearchConfiguration` extends `ElasticsearchConfigurationSupport` เพื่อใช้ mapping context/converter ของ Spring Data และประกาศ `ReactiveOpenSearchClient` กับ `ReactiveOpenSearchTemplate` ของ OpenSearch โดยตรง ไม่ inherit `ReactiveOpenSearchConfiguration` เพราะ default transport ของ 3.1.4 ยังเป็น deprecated `RestClientTransport` บทนี้ยังไม่เพิ่ม CRUD หรือ repository ใน metadata endpoints
+
+`OpenSearchConfiguration` สร้าง official `OpenSearchAsyncClient` และเรียก `OpenSearchTransportFactory.create()` ร่วมกับ Spring Data configuration เพื่อให้สอง configurations ใช้ TLS/authentication/timeout policy เดียวกัน แต่เรียกสร้างคนละ instance: `springDataTransport` และ `javaClientTransport` ทั้งคู่เป็น `ApacheHttpClient5Transport` ไม่มี RestClient bean และไม่เรียก deprecated APIs หรือ suppress warnings
+
+Factory แยกจาก configuration classes และคืน transport ใหม่ทุกครั้ง แต่ละ transport ใช้ strict TLS 1.2/1.3 พร้อม trusted CA และ hostname verification, host-scoped credentials, configurable pool (default 16 total/16 per route ต่อ transport) และปิด automatic retries/redirects Connect timeout อยู่ที่ `ConnectionConfig` ส่วน pool acquisition/response timeout อยู่ที่ request configuration อ่าน CA/password เฉพาะ startup ไม่อ่าน files บน event loop หรือแก้ JVM-global SSL defaults
+
+Lifecycle ให้ transport beans เป็น close owners และปิด destroy callback ของ reactive wrapper เพื่อไม่ close ซ้ำ Template/converter beans เป็น Spring Data implementations จริง ชื่อ base class/interfaces บางส่วนใช้ Elasticsearch ตาม upstream API แต่ไม่สร้าง Elasticsearch client
 
 Services แยก SpringData/JavaClient คืน shared DTO semantics Controllers บางและมีเพียงสี่ GET routes `ApiExceptionHandler` ตรวจ typed upstream status และ cause chain ที่มีขอบเขต ไม่ parse error message หรือเปิดเผย private details
 
@@ -136,9 +163,10 @@ flowchart LR
   B --> C["Mono.defer ReactiveOpenSearchClient"]
   D["/api/java-client/cluster"] --> E["JavaClient service"]
   E --> F["Mono.defer CompletableFuture"]
-  C --> G["Shared Apache HttpClient 5 HTTPS transport"]
-  F --> G
-  G --> H["OpenSearch TLS + Security"]
+  C --> G["Spring Data ApacheHttpClient5Transport"]
+  F --> H["Official ApacheHttpClient5Transport"]
+  G --> I["OpenSearch TLS + Security"]
+  H --> I
 ```
 
 ## Coverage และ limitations
@@ -146,14 +174,25 @@ flowchart LR
 | Feature | Spring Data path | Official path | Proof |
 |---|---|---|---|
 | Metadata/health | ReactiveOpenSearchClient / reactive cluster client | OpenSearchAsyncClient / async cluster client | Real server HTTP/parity |
-| TLS/authentication | Shared HTTPS transport | Shared HTTPS transport | Positive, wrong CA, wrong password |
+| TLS/authentication | Explicit Apache transport + Spring Data reactive client | Direct Apache transport configuration | Positive, wrong CA, wrong password |
 | Authorization | Info-only user health denied | Same identity/permissions | Native 403 และ normalized 502 |
-| Hostname validation | Shared strict verifier | Shared strict verifier | Valid trusted cert with wrong SAN |
+| Hostname validation | Explicit strict TLS strategy | Explicit strict TLS strategy | Valid trusted cert with wrong SAN |
 | Lazy lifecycle | Mono.defer | Deferred future creation | Unit tests และ real-client spies |
 
-Spring Data อยู่ใน reactive-client tier ไม่ใช่ repository/template coverage ไม่มี fake Spring Data fallback ที่เรียก official service ภายใน การแชร์ transport เป็น intentional เพื่อเปรียบเทียบ client wrappers ภายใต้ security policy เดียวกัน ไม่พิสูจน์ว่า Spring Data default transport มีพฤติกรรมเหมือนกัน
+Spring Data endpoints อยู่ใน reactive-client tier สำหรับ metadata ส่วน template/converter infrastructure สร้างจริงและมี wiring tests แต่ยังไม่อ้าง document mapping/repository coverage ไม่มี fake Spring Data fallback ที่เรียก official service ภายใน และใช้ transport คนละ instance โดยใช้ configuration policy เดียวกัน
 
 ## Configuration และ generated material
+
+`learning.opensearch.*` ใน application.yml เป็น custom properties ของบทที่ bind ผ่าน `@ConfigurationProperties` ไม่ใช่ built-in namespace ของ Spring Data OpenSearch บทนี้ใช้ explicit Java configuration แทน starter auto-configuration เพื่อเลือก transport ที่ไม่ deprecated โดยคง Spring Data reactive client/template/converter การเปลี่ยน YAML prefix อย่างเดียวไม่เปิด auto-configuration
+
+ตัวอย่าง flow:
+
+```text
+application.yml → OpenSearchProperties
+  ├─ SpringDataOpenSearchConfiguration → separate ApacheHttpClient5Transport
+  │    → ReactiveOpenSearchClient → ReactiveOpenSearchTemplate + mapping converter
+  └─ OpenSearchConfiguration → separate ApacheHttpClient5Transport → OpenSearchAsyncClient
+```
 
 | Setting | Default |
 |---|---|
@@ -164,8 +203,24 @@ Spring Data อยู่ใน reactive-client tier ไม่ใช่ repositor
 | OPENSEARCH_PASSWORD_FILE | certs/generated/secrets/monitor.password |
 | OPENSEARCH_PORT (Compose) | 9202 |
 | Connect / pool / response / overall timeout | 1s / 1s / 3s / 5s |
+| OPENSEARCH_MAX_CONNECTIONS / OPENSEARCH_MAX_CONNECTIONS_PER_ROUTE | 16 / 16 ต่อ transport |
 
 Compose `.env` ไม่ export ให้ host JVM เมื่อเปลี่ยน Compose port ต้องตั้ง OPENSEARCH_URI ให้ตรงด้วย URI ไม่รับ user-info/path/query/fragment และต้องเป็น HTTPS CA/password file ที่ไม่มีหรืออ่านไม่ได้ทำให้ startup fail; wrong CA ที่ parse ได้ทำให้ request handshake fail
+
+Pool limits ต้องเป็นจำนวนบวก และ `max-connections-per-route <= max-connections` ค่า limits แยกต่อ transport ไม่ใช่ total budget ของทั้ง application เช่น default สอง transports มีเพดานรวม 32 connections และไม่ได้จำกัดจำนวน incoming HTTP requests โดยตรง
+
+Timeouts ทุกค่าต้องอยู่ในช่วง 1ms–60s และ `request-timeout >= response-timeout` (เท่ากันได้) การตั้งผิดทำให้ application startup fail:
+
+| Setting | ขอบเขต |
+|---|---|
+| connect-timeout | การสร้าง connection ใหม่ที่ connection manager รวมขั้นตอน transport security ตาม HttpClient semantics |
+| pool-timeout | รอ lease connection จาก pool ไม่ใช่ connect timeout |
+| response-timeout | การรอ response ใน HTTP transport ไม่ใช่ total operation deadline ที่รวมทุก phase |
+| request-timeout | Reactor `.timeout()` ต่อ subscription ของ operation รวมการรอผลใน application pipeline |
+
+Validation ป้องกัน overall timeout ที่สั้นกว่า response timeout แต่ไม่ได้รับประกันว่า overall deadline ครอบคลุมผลรวม pool/connect/response หรือว่า I/O จะหยุดเมื่อ Reactor timeout/cancel การ cancel future ไม่รับประกัน network/server abort และไม่ใช่ rollback ถ้าตั้งสองค่าเท่ากัน timeout จากคนละ layer อาจแข่งกันได้ บทนี้ยังไม่ทดสอบ timeout/load tuning ใน production
+
+Password ถูกอ่านเฉพาะ startup เป็น `String` แล้วแปลงเป็น `char[]` สำหรับ credential object จึงมีสำเนาใน heap ที่ล้างอย่างแน่นอนไม่ได้ และ credential provider อาจถือค่าไว้ตลอดอายุ transport การใช้ `char[]` เพียงบางส่วนไม่รับประกันการล้างทุกสำเนา ห้าม log credentials/heap dumps ที่ไม่ได้ควบคุมสิทธิ์ บทนี้ใช้ file permissions และ least privilege แต่ไม่ได้สาธิต secret rotation หรือเพิ่ม secret-management framework
 
 Generated material ทั้งหมดอยู่ใน ignored `certs/generated/` ไม่มี secrets ใน Git Script สร้าง CA อายุ 30 วัน และ leaf certificates 7 วัน ไม่มี production persistence/rotation CA key เก็บใน `ca-private/`; node อ่าน node/http keys และ CA public certificate เท่านั้น Bootstrap container อ่าน admin key และ security hashes ชั่วคราว Host application อ่าน CA และ selected password เท่านั้น
 
@@ -268,7 +323,7 @@ Transport deadline พิสูจน์แบบ deterministic ด้วย Ste
 
 Surefire ค้นหา `*Test`; Failsafe ค้นหา `*IT` และรัน real secure OpenSearch บน random ports โดยเตรียม CA/users เองใน `target/` ไม่พึ่ง Compose instance หรือ generated material ของผู้เรียน Test orchestration ใช้ blocking calls บน test thread เท่านั้น ไม่อยู่ใน production Reactor pipeline
 
-Cases ครอบคลุม lazy/resubscription/retry/error/cancel/deadline, property/CA/password validation, typed error mapping, HTTP contracts, native 401/403, denied index creation, trust failure และ valid-trusted-but-wrong-SAN failure พร้อม transport lifecycle และ selected-client spies จำนวน tests และผล actual อยู่ใน VERIFICATION.md ไม่ใช่คำรับรองว่าทุก platform ผ่าน
+Cases ครอบคลุม lazy/resubscription/retry/error/cancel/deadline, property/CA/password validation, typed error mapping, HTTP contracts, native 401/403, denied index creation, trust failure และ valid-trusted-but-wrong-SAN failure พร้อม separate-transport lifecycle, framework template/converter wiring และ selected-client spies จำนวน tests และผล actual อยู่ใน VERIFICATION.md ไม่ใช่คำรับรองว่าทุก platform ผ่าน
 
 ## Cleanup และ troubleshooting
 
@@ -285,7 +340,8 @@ docker compose down
 - Startup fail: ตรวจ Java 21, CA/password paths และ file permissions
 - Compose healthy รอค้าง: เปิด logs และ initialize-security ก่อน เพราะ healthcheck ต้องใช้ authenticated user
 - Volume เดิม/keys ใหม่: ห้าม reinitialize โดยไม่ทราบผลกระทบต่อ security index
-- Unit/IT ไม่เริ่ม: ตรวจ Docker socket/context, OpenSSL และ Surefire/Failsafe reports ไม่ skip tests เพื่อประกาศผ่าน
+- Unit ไม่เริ่ม: ตรวจ JDK 21, Maven และ classpath test fixture; IT ไม่เริ่ม: ตรวจ Bash, Docker socket/context และ OpenSSL ไม่ skip tests เพื่อประกาศผ่าน
+- Full integration/setup scripts ยังเป็น Bash/POSIX workflow; Windows ต้องมี environment ที่รองรับ tools และ mounts (เช่น WSL2 + Docker ที่ตั้งค่าถูกต้อง) ยังไม่ verify บน Windows/WSL/remote Docker และไม่อ้างว่ารันได้จาก PowerShell โดยตรง
 
 ## Sources
 

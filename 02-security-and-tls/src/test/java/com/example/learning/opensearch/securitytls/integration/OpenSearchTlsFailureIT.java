@@ -1,6 +1,7 @@
 package com.example.learning.opensearch.securitytls.integration;
 
 import com.example.learning.opensearch.securitytls.config.OpenSearchConfiguration;
+import com.example.learning.opensearch.securitytls.config.SpringDataOpenSearchConfiguration;
 import com.example.learning.opensearch.securitytls.service.JavaClientClusterConnectionService;
 import com.example.learning.opensearch.securitytls.service.SpringDataClusterConnectionService;
 import com.example.learning.opensearch.securitytls.exception.ApiExceptionHandler;
@@ -33,7 +34,7 @@ class OpenSearchTlsFailureIT {
             leaf.verify(ca.getPublicKey());
             assertThat(leaf.getSubjectAlternativeNames().toString()).contains("wrong.invalid").doesNotContain("localhost", "127.0.0.1");
             var properties = environment.properties("monitor", false);
-            new ApplicationContextRunner().withUserConfiguration(OpenSearchConfiguration.class)
+            new ApplicationContextRunner().withUserConfiguration(OpenSearchConfiguration.class, SpringDataOpenSearchConfiguration.class)
                     .withBean(JsonMapper.class, () -> JsonMapper.builder().build())
                     .withPropertyValues("learning.opensearch.uri=" + properties.uri(),
                             "learning.opensearch.ca-certificate=" + properties.caCertificate(),

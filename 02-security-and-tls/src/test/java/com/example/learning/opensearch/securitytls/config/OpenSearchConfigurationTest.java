@@ -18,30 +18,24 @@ class OpenSearchConfigurationTest {
     void preservesPasswordSpacesAndRejectsMultipleLines() throws Exception {
         var password = temporary.resolve("password");
         Files.writeString(password, " secret \r\n");
-        org.assertj.core.api.Assertions.assertThat(OpenSearchConfiguration.readPassword(password)).isEqualTo(" secret ");
+        org.assertj.core.api.Assertions.assertThat(OpenSearchPasswordFile.read(password)).isEqualTo(" secret ");
         Files.writeString(password, "first\nsecond\n");
-        assertThatThrownBy(() -> OpenSearchConfiguration.readPassword(password)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> OpenSearchPasswordFile.read(password)).isInstanceOf(IllegalArgumentException.class);
         Files.writeString(password, "first\n\n");
-        assertThatThrownBy(() -> OpenSearchConfiguration.readPassword(password)).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> OpenSearchConfiguration.readPassword(temporary.resolve("missing"))).isInstanceOf(java.io.IOException.class);
+        assertThatThrownBy(() -> OpenSearchPasswordFile.read(password)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> OpenSearchPasswordFile.read(temporary.resolve("missing"))).isInstanceOf(java.io.IOException.class);
     }
 
     @Test
     void failsStartupForEmptyPasswordWithoutOpeningTransport() throws Exception {
         var cert = temporary.resolve("ca.pem");
-        var process = new ProcessBuilder("openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes",
-                "-days", "1", "-subj", "/CN=Unit Test CA", "-keyout", temporary.resolve("ca.key").toString(),
-                "-out", cert.toString()).redirectErrorStream(true).start();
-        process.getInputStream().readAllBytes();
-        if (process.waitFor() != 0) {
-            throw new IllegalStateException("OpenSSL fixture creation failed");
-        }
+        Files.copy(Path.of(OpenSearchConfigurationTest.class.getResource("/certs/unit-ca.pem").toURI()), cert);
         var password = temporary.resolve("password");
         Files.writeString(password, " ");
         var duration = java.time.Duration.ofSeconds(1);
         var properties = new OpenSearchProperties(java.net.URI.create("https://localhost:9200"), cert, "user", password,
-                duration, duration, duration, duration);
-        assertThatThrownBy(() -> new OpenSearchConfiguration().openSearchTransport(properties, JsonMapper.builder().build()))
+                duration, duration, duration, duration, 16, 16);
+        assertThatThrownBy(() -> OpenSearchTransportFactory.create(properties, JsonMapper.builder().build()))
                 .isInstanceOf(IllegalArgumentException.class).hasMessage("Password file must contain one nonblank line");
     }
 }
