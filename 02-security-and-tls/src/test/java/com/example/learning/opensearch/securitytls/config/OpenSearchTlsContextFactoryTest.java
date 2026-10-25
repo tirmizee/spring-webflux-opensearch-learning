@@ -31,11 +31,7 @@ class OpenSearchTlsContextFactoryTest {
     void createsIsolatedTrustContextWithoutChangingJvmDefault() throws Exception {
         var original = SSLContext.getDefault();
         var cert = temporary.resolve("ca.pem");
-        var process = new ProcessBuilder("openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes",
-                "-days", "1", "-subj", "/CN=Unit Test CA", "-keyout", temporary.resolve("ca.key").toString(),
-                "-out", cert.toString()).redirectErrorStream(true).start();
-        process.getInputStream().readAllBytes();
-        assertThat(process.waitFor()).isZero();
+        Files.copy(Path.of(OpenSearchTlsContextFactoryTest.class.getResource("/certs/unit-ca.pem").toURI()), cert);
         assertThat(OpenSearchTlsContextFactory.create(cert)).isNotSameAs(original);
         assertThat(SSLContext.getDefault()).isSameAs(original);
     }

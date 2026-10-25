@@ -46,7 +46,7 @@ class JavaClientClusterConnectionServiceTest {
                 Duration.ofSeconds(1),
                 Duration.ofSeconds(3),
                 Duration.ofSeconds(5)
-        ));
+        , 16, 16));
     }
 
     @Test

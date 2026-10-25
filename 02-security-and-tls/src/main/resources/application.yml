@@ -14,3 +14,5 @@ learning:
     pool-timeout: ${OPENSEARCH_POOL_TIMEOUT:1s}
     response-timeout: ${OPENSEARCH_RESPONSE_TIMEOUT:3s}
     request-timeout: ${OPENSEARCH_REQUEST_TIMEOUT:5s}
+    max-connections: ${OPENSEARCH_MAX_CONNECTIONS:16}
+    max-connections-per-route: ${OPENSEARCH_MAX_CONNECTIONS_PER_ROUTE:16}

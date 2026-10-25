@@ -125,7 +125,7 @@ public final class SecureOpenSearchTestEnvironment implements AutoCloseable {
     public OpenSearchProperties properties(String identity, boolean wrongCa) {
         return new OpenSearchProperties(uri(), material.resolve(wrongCa ? "public/unrelated-ca.pem" : "public/ca.pem"),
                 identity.equals("info") ? "ch02_info_only" : "ch02_monitor", material.resolve("secrets/" + identity + ".password"),
-                Duration.ofSeconds(2), Duration.ofSeconds(2), Duration.ofSeconds(5), Duration.ofSeconds(10));
+                Duration.ofSeconds(2), Duration.ofSeconds(2), Duration.ofSeconds(5), Duration.ofSeconds(10), 16, 16);
     }
 
     public static boolean hasTlsCause(Throwable failure) {
