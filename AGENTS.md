@@ -12,6 +12,21 @@ Repository นี้ใช้เรียน Java 21, Spring Boot 4.x, Spring We
 - ไม่ commit, push, publish หรือส่งข้อความภายนอกหากไม่มีคำสั่ง
 - ไม่บังคับให้บทก่อนหน้า Verified ก่อนเริ่มบทที่ได้รับอนุมัติ ความรู้ prerequisite ต่างจาก runtime dependency
 
+## Chapter workflow
+
+บทใหม่ต้องผ่าน **PLAN → IMPLEMENT → REVIEW → VERIFY** ตามลำดับ:
+
+1. **PLAN** ใช้ `plan-chapter` อ่าน roadmap/บทที่เกี่ยวข้อง เสนอแผนภาษาไทยพร้อม acceptance criteria ไม่สร้างหรือแก้ implementation files แล้วรอผู้ใช้อนุมัติแผนนั้นอย่างชัดเจน
+2. **IMPLEMENT** ใช้ `implement-chapter` ทำตามแผนที่อนุมัติเฉพาะบทนั้น พร้อม source, configuration, tests และเอกสาร การสั่ง implement บทใหม่ที่ยังไม่มีแผนอนุมัติให้เริ่ม PLAN ก่อน
+3. **REVIEW** ใช้ `review-chapter` เทียบ implementation กับ approved plan ตรวจแบบ read-only รายงาน findings ตาม severity พร้อม exact file locations ไม่แก้ source หรือรายงานระหว่าง review
+4. **VERIFY** เป็นกิจกรรมแยกจาก REVIEW รัน checks จริงตาม [testing standards](docs/testing-standards.md#verification) และบันทึกหลักฐานใน `VERIFICATION.md` ไม่ต้องสร้าง skill เพิ่ม
+
+หาก REVIEW พบปัญหา ต้องรายงานก่อนและกลับไป IMPLEMENT แก้ใน scope เดิม จากนั้น REVIEW ซ้ำก่อน VERIFY หาก VERIFY พบปัญหาให้แก้แล้ว REVIEW/VERIFY ซ้ำตามผลกระทบ ไม่ถือการอ่าน code เป็น runtime verification
+
+Approval gate อยู่ระหว่าง PLAN กับ IMPLEMENT หลังอนุมัติแล้วดำเนิน stages ที่เหลือต่อได้ใน scope เดิม ไม่ขออนุมัติซ้ำสำหรับ fixes ที่อยู่ในแผน หากต้องขยาย scope หรือเปลี่ยน decision ของแผน ให้เสนอส่วนที่เปลี่ยนและรออนุมัติก่อนทำส่วนนั้น
+
+Bug fixes ใช้ **IMPLEMENT → VERIFY → REVIEW** ได้ หาก final review พบปัญหาให้แก้และตรวจซ้ำจนผลสอดคล้องกับ source ล่าสุด Small documentation fixes ใช้ **EDIT → CHECK** ได้ ไม่เปลี่ยน chapter verification status จากการแก้เอกสาร workflow อย่างเดียว ทุกเส้นทางไม่ commit/push โดยอัตโนมัติ
+
 ## Engineering invariants
 
 - อ่าน [engineering standards](docs/engineering-standards.md) ซึ่งรวม reactive OpenSearch integration

@@ -92,6 +92,10 @@ Official docs ของ exact release และ dataset/model provenance/license
 
 Template นี้ไม่มีผลทดสอบ กรอกหลัง attempted validation และไม่คัดลอก expected เป็น actual
 
+### Plan และ review context
+
+ระบุ approved plan ที่ใช้ (ไฟล์หรือข้อความใน conversation พร้อม scope/วันที่อนุมัติ ไม่บังคับสร้าง plan file), reviewed source state, review findings และผลแก้ไข อ้าง review summary ที่มีจริง แยกจาก runtime evidence ตาม [chapter workflow](../AGENTS.md#chapter-workflow)
+
 ### Source และ environment
 
 - Timestamp พร้อม timezone:
@@ -106,6 +110,7 @@ Template นี้ไม่มีผลทดสอบ กรอกหลัง 
 | Environment/dependencies | ยังไม่ได้รัน | Versions/API alignment | ไม่มีหลักฐาน | NOT VERIFIED |
 | Build/unit/HTTP tests | ยังไม่ได้รัน | Tests discovered and passing | ไม่มีหลักฐาน | NOT VERIFIED |
 | OpenSearch ITs | ยังไม่ได้รัน | Real-server assertions pass | ไม่มีหลักฐาน | NOT VERIFIED |
+| Compose configuration | ยังไม่ได้รัน | docker compose config ผ่าน | ไม่มีหลักฐาน | NOT VERIFIED |
 | Compose readiness | ยังไม่ได้รัน | API ready | ไม่มีหลักฐาน | NOT VERIFIED |
 | Packaged application | ยังไม่ได้รัน | Listening and ready | ไม่มีหลักฐาน | NOT VERIFIED |
 | cURL/field assertions | ยังไม่ได้รัน | Status และ data ถูกต้อง | ไม่มีหลักฐาน | NOT VERIFIED |
@@ -121,7 +126,7 @@ Template นี้ไม่มีผลทดสอบ กรอกหลัง 
 
 ### Overall status
 
-NOT VERIFIED — แทนตามหลักฐานจริง ใช้ Verified ใน roadmap ต่อเมื่อ mandatory gates ผ่านทั้งหมดบน relevant final source state
+NOT VERIFIED — แทนตามหลักฐานจริง ใช้เกณฑ์ REVIEW และ mandatory verification gates จาก [testing standards](testing-standards.md#verification) ก่อนตั้ง Verified ใน roadmap บน relevant final source state
 
 ### Coverage สองแนวทาง
 
