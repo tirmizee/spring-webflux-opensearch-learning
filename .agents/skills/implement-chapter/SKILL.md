@@ -1,28 +1,22 @@
 ---
 name: implement-chapter
-description: สร้างหรือแก้ chapter ที่ได้รับอนุมัติให้มี Spring Data OpenSearch reactive และ official async สองแนวทาง พร้อม tests, parity, README ภาษาไทย และ verification evidence
+description: สร้างหรือแก้ chapter ที่อนุมัติ สองแนวทาง Spring Data OpenSearch reactive และ official async พร้อม tests, parity, README และ verification evidence
 ---
 
 # Implement chapter
 
-ใช้เมื่อผู้ใช้สั่ง implement/แก้บทชัดเจน การอนุมัติ foundation หรือ plan-only ไม่รวม chapter ไม่ถามอนุมัติซ้ำภายใน scope ที่อนุมัติแล้ว
+ใช้เมื่อผู้ใช้สั่ง implement หรือแก้บทชัดเจน ทำภายใน scope ที่อนุมัติ คำขอ plan ไม่อนุญาต implementation
 
-หา root อ่าน [AGENTS.md](../../../AGENTS.md), [roadmap](../../../README.md), existing chapter/plan และ git state รักษางานเดิม อ่าน [compatibility](../../../docs/compatibility.md) และยุติ dependent decisions โดยเฉพาะ JUnit ก่อนสร้างโค้ดที่พึ่ง decision นั้น ไม่สร้าง probe project เพิ่มเอง
+อ่าน [AGENTS.md](../../../AGENTS.md), [roadmap](../../../docs/learning-roadmap.md), existing chapter/plan และ git state รักษางานเดิม ตรวจ [compatibility](../../../docs/compatibility.md) และยุติ dependent decisions ก่อนสร้างโค้ดที่พึ่ง decision นั้น ไม่สร้าง probe project เพิ่มเอง
 
-สร้างเฉพาะบทที่ขอตาม [chapter contract](../../../docs/chapter-contract.md), [engineering](../../../docs/engineering-standards.md) และ [reactive standards](../../../docs/reactive-opensearch.md) ตรวจ exact dependency APIs ใช้ own POM/Wrapper/Compose/fixtures ไม่มี common runtime module ใช้ lazy OpenSearchAsyncClient, bounded concurrency/buffers, deadlines และ resource lifecycle ไม่มี blocking/manual subscribe ใน request flow Seed/setup ต้องมี explicit completion/failure
+ใช้ [chapter template](../../../docs/chapter-template.md), [engineering](../../../docs/engineering-standards.md), [testing และ verification](../../../docs/testing-standards.md) และ [dual-approach contract](../../../docs/dual-approach.md) ทุกบทมี POM/Wrapper/Compose/fixtures/tests ของตัวเอง ไม่มี cross-chapter runtime dependency
 
-เพิ่ม tests ตาม [testing standards](../../../docs/testing-standards.md) ไม่ disable ITs หรือลด assertions เพื่อผ่าน ใช้ [README template](../../../docs/templates/chapter-readme.md) ให้คำสั่งตรง implementation
+Implement Spring Data reactive และ official OpenSearchAsyncClient ตาม exact release APIs แยก SpringData*/JavaClient* services/controllers และ `/api/spring-data` กับ `/api/java-client` ใช้ shared public contract และ equivalent fixtures บท document ใช้ repository/operations/template ตาม support จริง ไม่เรียก direct service เดิมแล้วนับเป็น Spring Data native coverage
 
-รัน foundation checks, full Maven verify และ applicable Compose/packaged-app/API checks ตาม [verification standards](../../../docs/verification-standards.md) แก้ issues ใน scope และ rerun affected checks ใช้ [verification template](../../../docs/templates/chapter-verification.md) บันทึก actual commands, source state, counts, failures/retests และ cleanup หาก environment ขัดขวางให้รายงาน BLOCKED/NOT VERIFIED
+ตรวจ auto-configuration, bean qualifiers, mapper/converter และ transport close owner ใช้ lazy invocation ของทั้งสอง path เมื่อ method eager แม้คืน Mono สร้าง operation ใหม่เมื่อ retry จำกัด concurrency/buffers และ deadlines ห้าม blocking/manual subscribe ใน request flow Seed/setup ต้องมี explicit completion/failure
 
-อัปเดต roadmap เป็น Implemented หรือ Verified ตามหลักฐาน สรุปผลแล้วหยุด ไม่เริ่มบทถัดไป ไม่ commit/push เอง
+เพิ่ม unit/reactive/HTTP tests และ real-server parity tests ของทั้งสอง path ตรวจ lazy/resubscription/errors/cancellation และ resource isolation ไม่ disable ITs หรือลด assertions เพื่อผ่าน หาก feature gap ทำ mandatory objective ไม่ได้ให้รายงาน decision ที่ต้องยุติ
 
-## Two-approach implementation
+รัน `./mvnw -B -ntp clean verify` จาก directory ของบท พร้อม applicable Compose/packaged-app/API checks บันทึก actual commands, source state, suite counts, failures/retests และ cleanup ใน `VERIFICATION.md` ตาม template แยก historical evidence จากผลปัจจุบัน หาก environment ขัดขวางให้รายงาน BLOCKED/NOT VERIFIED
 
-อ่าน [dual-approach contract](../../../docs/dual-approach.md) ทุกบทต้องมี Spring Data OpenSearch reactive และ official OpenSearchAsyncClient ใน standalone project เดียว Implement ตาม actual release APIs และ coverage matrix ไม่เพิ่ม synchronous repository หรือ legacy transport เพียงเพราะตัวอย่าง default ใช้เช่นนั้น
-
-แยก SpringData*/JavaClient* services/controllers และ target /api/spring-data กับ /api/java-client ใช้ shared public contract ไม่ปลอม native Spring Data path ด้วยการเรียก direct service เดิม ตรวจ bean qualifiers, auto-configuration, mapper/converter และ transport close owner จะ share หรือแยกต้องมีเหตุผลและหลักฐาน
-
-Defer invocation ที่ eager ทั้งสอง path แม้ library คืน Mono แล้ว ทดสอบ lazy/resubscription/error/cancel แยก path เพิ่ม real-server behavioral parity และ packaged-app smoke สำหรับทุก implemented route Write fixtures ต้องไม่รบกวนกัน
-
-Existing official-only Chapter 01 มี historical verification แต่ current scope ยังไม่ครบ เมื่อ migrate ให้ระบุ legacy-route policy และเก็บหลักฐานเดิม ตรวจ dependency tree/full verify/smoke ใหม่ก่อน Verified หาก feature gap ทำ mandatory objective ไม่ได้ ต้องเปิดเผยและยุติ exception decision ไม่ลด assertions หรือใส่ N/A เอง
+เมื่อเพิ่มบทให้เพิ่มชื่อใน explicit matrix ของ `.github/workflows/chapter-verification.yml` ตรวจ README/local links และปรับ roadmap เป็น Implemented หรือ Verified ตามหลักฐาน สรุปผลแล้วหยุด ไม่เริ่มบทถัดไป ไม่ commit/push เอง

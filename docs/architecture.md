@@ -1,6 +1,6 @@
 # Architecture
 
-แต่ละ `NN-topic-name/` เป็น standalone Java 21/Spring Boot project มี parent โดยตรง (`relativePath` ว่าง), Wrapper/Compose/fixtures/tests ของตัวเอง ไม่มี cross-chapter dependency หรือ root reactor ดู [ADR 0001](decisions/0001-independent-chapters.md)
+แต่ละ `NN-topic-name/` เป็น standalone Java 21/Spring Boot project มี parent โดยตรง (`relativePath` ว่าง), Wrapper/Compose/fixtures/tests ของตัวเอง ไม่มี cross-chapter dependency หรือ root reactor
 
 ## สอง application paths
 
@@ -27,6 +27,12 @@ Default transport ของ Spring Data candidate ต้องตรวจจา
 
 Single-node Compose ใช้เรียน ไม่พิสูจน์ HA/performance Tests ใช้ random ports แยกจาก Compose Write parity tests reset หรือแยก equivalent resources ระหว่างสอง path
 
-## Current migration state
+## Chapter 01
 
 Chapter 01 implement สอง path แล้ว: `/api/spring-data/cluster/*` ใช้ ReactiveOpenSearchClient และ `/api/java-client/cluster/*` ใช้ OpenSearchAsyncClient ทั้งสอง share Apache HttpClient 5 transport ที่ Spring ปิดจุดเดียว เก็บ `/api/cluster/*` เป็น official aliases พร้อม tests และ smoke จริง ดู [current verification](../01-basic-connection/VERIFICATION.md)
+
+## เหตุผลของโครงสร้าง
+
+Standalone projects ทำให้เลือกเรียนแต่ละบทและรัน tests ได้ทันทีโดยไม่ build หรือ seed บทอื่น ยอมรับการซ้ำของ POM/configuration เพื่อให้บทอ่านและรันได้ด้วยตัวเอง ไม่สร้าง shared runtime module หรือ root Maven reactor
+
+แต่ละบทใช้ชื่อ `NN-topic-name` ตาม [roadmap](learning-roadmap.md) มี POM/Wrapper/Compose/tests ของตัวเองและสอง approach ใน project เดียว ไม่สร้าง empty future directories โครงสร้างและเอกสารประจำบทใช้ [chapter template](chapter-template.md) เพิ่ม packages/resources เฉพาะที่บทใช้งานจริง

@@ -1,29 +1,27 @@
 ---
 name: review-chapter
-description: ตรวจ chapter สองแนวทาง Spring Data OpenSearch reactive และ official async ด้าน wiring, feature parity, tests และเอกสาร โดยไม่แก้ code ใน review-only request
+description: ตรวจ chapter สองแนวทาง Spring Data OpenSearch reactive และ official async ด้าน wiring, parity, tests และเอกสาร โดยไม่แก้ไฟล์ใน review-only request
 ---
 
 # Review chapter
 
-ค่าเริ่มต้นเป็น read-only review ไม่แก้ code, report หรือ roadmap หากผู้ใช้ขอแก้ findings ด้วย ให้ใช้ implement workflow ภายใน scope ที่อนุมัติ
+ค่าเริ่มต้นเป็น read-only review ไม่แก้ code, report หรือ roadmap หากผู้ใช้ขอแก้ findings ด้วยให้ทำภายใน scope ที่อนุมัติ
 
-หา root อ่าน [AGENTS.md](../../../AGENTS.md), requested chapter/source state, [compatibility](../../../docs/compatibility.md) และ [chapter contract](../../../docs/chapter-contract.md)
+อ่าน [AGENTS.md](../../../AGENTS.md), requested chapter/source state, [compatibility](../../../docs/compatibility.md), [chapter template](../../../docs/chapter-template.md) และ [roadmap](../../../docs/learning-roadmap.md) เลือกอ่าน [engineering](../../../docs/engineering-standards.md), [testing และ verification](../../../docs/testing-standards.md) ตาม scope
 
-เลือกอ่าน standards ตาม scope:
+ตรวจ [dual-approach contract](../../../docs/dual-approach.md): Spring Data path ต้องใช้ OpenSearch reactive implementation จริง บท document สอน repository/operations/template ตาม feature support ไม่ใช่ direct service ที่เปลี่ยนชื่อ เทียบ native/reactive-client/fallback coverage กับ objectives และ route/DTO/error/data parity
 
-- [Engineering](../../../docs/engineering-standards.md): mappings/query semantics, validation, HTTP errors, secrets และ TLS
-- [Reactive](../../../docs/reactive-opensearch.md): async transport จริง, lazy/fresh retry, blocking/subscriptions, deadlines, cancellation limits, bounds และ cleanup
-- [Testing](../../../docs/testing-standards.md): meaningful assertions, mock limits, real-server coverage, test discovery และ deterministic fixtures
-- [Verification](../../../docs/verification-standards.md): source state, actual commands/counts เทียบ code/README ไม่รับ historical evidence เป็น current pass
+ตรวจ accidental Elasticsearch auto-config, eager invocation, fresh retry, sync/async errors, deadlines, cancellation limits, bounds, bean ambiguity, double-close และ converter/ID/date/null semantics ตรวจ exact version APIs โดยเฉพาะ advanced features ไม่สมมติ native support
 
-หากรัน checks ให้แยกคำสั่งและผลจริงจาก source inspection ไม่ทำ destructive resets หรือใช้ resources ที่ไม่ใช่ของ review หากไม่ได้รันหรือ environment ไม่พร้อมให้รายงานชัดเจน
+Tests ต้องเรียกสอง path ต่อ real server พร้อม equivalent isolated fixtures ไม่ถือ Maven success หรือ dependency declaration อย่างเดียวพิสูจน์ wiring ตรวจ Surefire/Failsafe discovery, reports, meaningful assertions และ packaged-app smoke ตาม applicable gates
 
-ใช้ [review template](../../../docs/templates/chapter-review.md) Findings เรียง severity พร้อม file:line, trigger, impact และ suggested fix แยกข้อสงสัยจาก defects ที่มีหลักฐาน ไม่พบ actionable findings ให้บอกขอบเขตที่ตรวจ tests ที่รัน/ยังไม่รัน และ residual risks ไม่สรุป runtime pass จากการอ่าน code
+หากรัน checks ให้แยก actual commands/results จาก source inspection ไม่ reset/delete resources ของผู้ใช้ ไม่รับ historical report เป็น current runtime pass ตรวจ README commands/local links, roadmap status, skill references และ CI matrix สำหรับบทที่เพิ่มใหม่
 
-## Two-approach review
+รายงานผลใน chat โดยใช้โครงสร้าง:
 
-อ่าน [dual-approach contract](../../../docs/dual-approach.md) ตรวจว่า Spring Data path ใช้ OpenSearch reactive implementation จริง และ document use case สาธิต repository/operations/template ไม่ใช่ direct service ที่เปลี่ยนชื่อ Check actual native/reactive-client/fallback coverage เทียบ objectives และตรวจ route/DTO/error/data parity
+- Scope/source state: revision/dirty state, files และสิ่งที่ไม่ได้ตรวจ
+- Findings: เรียง severity พร้อม file:line, concrete trigger, impact และ suggested fix แยกข้อสงสัยจาก defects
+- Checks/evidence: คำสั่งและผลจริง, tests ที่ไม่ได้รัน, blockers และ coverage สองแนวทาง
+- Residual risks: mock/cancellation/performance/platform limits ที่ยังไม่พิสูจน์
 
-ตรวจ accidental Elasticsearch auto-config, eager client invocation, converter/ID/date/null mapping differences, bean ambiguity และ double-close Tests ต้องเรียกทั้งสอง path ต่อ real server พร้อม isolated equivalent fixtures ไม่ถือว่า full Maven success หรือ dependency declaration อย่างเดียวพิสูจน์สองแนวทาง
-
-ตรวจ historical evidence หลัง scope expansion: Chapter 01 official-only 25 tests ไม่ใช่ dual-path verification และไม่ควรยังเป็น overall Verified ก่อน migrate ข้อมูลที่ยังไม่ตรวจให้รายงานตามจริง ไม่ใช้ limitation ของ abstraction เป็น silent exception
+หากไม่พบ actionable findings ให้บอกขอบเขตและข้อจำกัด ไม่สรุป runtime pass จากการอ่าน code ไม่เปลี่ยน roadmap โดยอัตโนมัติ

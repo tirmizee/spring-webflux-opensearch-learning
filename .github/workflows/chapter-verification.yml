@@ -9,37 +9,15 @@ permissions:
   contents: read
 
 jobs:
-  discover:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      chapters: ${{ steps.chapters.outputs.json }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - id: chapters
-        name: Discover implemented chapters
-        shell: bash
-        run: |
-          chapters="$(python3 scripts/check_foundation.py --discover)"
-          echo "json=$chapters" >> "$GITHUB_OUTPUT"
-          if [[ "$chapters" == '[]' ]]; then
-            echo 'No chapters exist yet; no Java/OpenSearch verification was performed.' >> "$GITHUB_STEP_SUMMARY"
-          fi
   verify:
-    needs: discover
-    if: needs.discover.outputs.chapters != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        chapter: ${{ fromJSON(needs.discover.outputs.chapters) }}
-    env:
-      CHAPTER: ${{ matrix.chapter }}
+        chapter:
+          - 01-basic-connection
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -49,7 +27,8 @@ jobs:
       - name: Check Docker availability
         run: docker version
       - name: Run unit and OpenSearch integration tests
-        run: bash scripts/verify-chapter.sh "$CHAPTER"
+        working-directory: ${{ matrix.chapter }}
+        run: ./mvnw -B -ntp clean verify
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4

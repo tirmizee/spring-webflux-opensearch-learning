@@ -54,38 +54,13 @@ Sharing transport ทำได้เมื่อ option/mapper/security policies
 - Unit tests mock dependency ของแต่ละ approach แยกกัน; HTTP tests มีทั้งสอง prefix; IT และ packaged-app smoke ต้องเรียกทั้งสอง path จริง
 - Full verify และการมี Spring Data dependency ใน POM ไม่พิสูจน์ว่า Spring Data path ถูกใช้ ต้องตรวจ bean/implementation wiring และ behavior ของ path นั้น
 
-## Definition of done ใหม่
+## Definition of done
 
-Verified ต้องมีสอง path ที่ implement แล้ว พร้อม feature coverage/parity, real OpenSearch integration และ smoke/error evidence ตาม [verification standards](verification-standards.md) หากมี approved limitation ให้บันทึกขอบเขตชัดเจน
+Verified ต้องมีสอง path ที่ implement แล้ว พร้อม feature coverage/parity, real OpenSearch integration และ smoke/error evidence ตาม [verification standards](testing-standards.md#verification) หากมี approved limitation ให้บันทึกขอบเขตชัดเจน
 
 Chapter 01 มี historical official-only result 25 tests และ current dual-approach verification 49 tests พร้อม smoke/parity แล้ว Overall status เป็น Verified ตาม report ปัจจุบัน บทนี้ใช้ reactive-client tier สำหรับ metadata ไม่อ้าง repository/template mapping coverage
 
-## Roadmap coverage เป้าหมาย
-
-ตารางนี้แสดง design targets ไม่ใช่คำยืนยัน API support หรือ implementation status สถานะบทอยู่ root README เท่านั้น
-
-| Chapter | Spring Data OpenSearch target | Official Java Client target / comparison |
-|---|---|---|
-| 01 Connection | Reactive client metadata/cluster APIs; ตรวจ wiring | Async info/health และ error/lifecycle parity |
-| 02 Security | Reactive configuration, trusted TLS และ app identity | Transport TLS/auth ด้วยสิทธิ์เดียวกัน |
-| 03 Mappings | Mapping annotations, converter และ index operations | Explicit mappings/settings และเปรียบเทียบ generated mapping |
-| 04 CRUD | Reactive repository และ operations | Async CRUD, ID/conflict/refresh parity |
-| 05 Full-text | Operations/query abstractions ที่รองรับ | Typed match/multi_match/phrase และ relevance assertions |
-| 06 Filtering | Reactive query/filter composition | Bool/term/range boundaries บน fixtures เดียวกัน |
-| 07 Analyzers | Index/settings integration และ query behavior | Explicit analyzer setup/_analyze; ระบุ low-level boundary |
-| 08 Pagination | Reactive sorting/page/cursor support ที่ตรวจได้ | search_after/PIT, tie-breaker และ cleanup |
-| 09 Aggregations | Supported aggregation containers/conversion | Typed aggregations, buckets/counts และ pagination |
-| 10 Autocomplete | Supported query abstractions; ระบุ gaps | Prefix/ngram/completion/fuzzy queries |
-| 11 Bulk | Reactive saveAll/bulk behavior และ partial errors | Explicit batch/item errors และ concurrency bounds |
-| 12 Resilience | Spring Data exception translation/deadlines | Client exception mapping, fresh retry และ shared contract |
-| 13 Concurrency | Entity/version metadata และ partial updates | seq_no/primary_term, conflict/upsert semantics |
-| 14 Lifecycle | Available index/alias/reindex abstractions | Explicit admin requests และ safe cutover |
-| 15 Nested/grouping | Mapping/query/inner_hits conversion | Nested/collapse requests และ grouping parity |
-| 16 Testing | Reactive repository/template/client tests | Async adapter tests และ cross-path full integration |
-| 17 Observability | Abstraction/converter overhead และ metrics | Transport metrics กับ bounded workload เดียวกัน |
-| 18 Vector | ตรวจ vector mapping/query support ก่อน implement | Exact/ANN baseline และ known-neighbor assertions |
-| 19 Semantic | Embedding-field mapping/retrieval ที่รองรับ | Ingest/search requests พร้อม model provenance |
-| 20 Hybrid | ตรวจ hybrid/pipeline support; explicit gap policy | Hybrid query/pipeline และ relevance judgments |
+Roadmap และ coverage เป้าหมายอยู่ใน [learning roadmap](learning-roadmap.md) ตารางเป็น design targets ไม่ใช่การรับรอง API support
 
 ## Sources และ compatibility scope
 

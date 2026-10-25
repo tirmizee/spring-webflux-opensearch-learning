@@ -6,7 +6,7 @@ Status: Accepted — ผู้ใช้ขอแก้ข้อกำหนด�
 
 แต่ละ standalone chapter ออกแบบ Spring Data OpenSearch reactive และ official OpenSearchAsyncClient สอง path ภายใน project เดียว ใช้ objectives/fixtures/DTO semantics ร่วมกันและแยก prefixes/classes เพื่อเปรียบเทียบจริง ตาม [dual-approach contract](../dual-approach.md)
 
-Decision นี้แทน single-path choice ของ [ADR 0002](0002-async-opensearch-client.md) แต่คง native async I/O เป็น invariant ไม่มี synchronous repository path ใน request flow
+Decision นี้แทน single-path choice เดิม หลัก architecture ปัจจุบันอยู่ใน [architecture](../architecture.md) แต่คง native async I/O เป็น invariant ไม่มี synchronous repository path ใน request flow
 
 ## Consequences
 

@@ -1,22 +1,24 @@
 ---
 name: plan-chapter
-description: วางแผน chapter ของ spring-webflux-opensearch-learning สองแนวทาง Spring Data OpenSearch reactive และ official async พร้อม coverage/parity และ verification plan โดยไม่ implement
+description: วางแผน chapter สองแนวทาง Spring Data OpenSearch reactive และ official async พร้อม coverage, parity และ verification plan โดยไม่ implement
 ---
 
 # Plan chapter
 
-ใช้เมื่อขอออกแบบบทใหม่หรือเปลี่ยน scope ค่าเริ่มต้นแสดงแผนใน chat ไม่เขียนไฟล์ เว้นแต่ขอให้บันทึก และไม่เปลี่ยน roadmap status จากคำขอ plan
+ใช้เมื่อออกแบบบทใหม่หรือเปลี่ยน scope แสดงแผนใน chat ไม่เขียนไฟล์เว้นแต่ผู้ใช้ขอให้บันทึก และไม่เปลี่ยน chapter status จากคำขอ plan
 
-หา repository root อ่าน [AGENTS.md](../../../AGENTS.md), [roadmap](../../../README.md), [compatibility](../../../docs/compatibility.md) และ [chapter contract](../../../docs/chapter-contract.md) ตรวจ working tree และอ่านบทเดิมถ้ามี ไม่บังคับให้บทก่อนหน้าผ่านก่อน
+อ่าน [AGENTS.md](../../../AGENTS.md), [roadmap](../../../docs/learning-roadmap.md), [compatibility](../../../docs/compatibility.md), [chapter template](../../../docs/chapter-template.md) และ existing chapter/plan ตรวจ working tree และ scope ที่อนุมัติ
 
-ใช้ [plan template](../../../docs/templates/chapter-plan.md) กำหนด measurable objectives, core/optional scope, exact versions/evidence status, classes, dataset/mappings/resources, endpoint contracts และ expected assertions ตรวจ official APIs เมื่อเป็นข้อมูล version-dependent ไม่เดา
+ใช้ [engineering](../../../docs/engineering-standards.md), [testing](../../../docs/testing-standards.md) และ [dual-approach contract](../../../docs/dual-approach.md) ออกแบบแผนที่มี:
 
-อ่าน [reactive standards](../../../docs/reactive-opensearch.md) สำหรับ lazy async bridge, sync/async errors, retry/idempotency, cancellation limits และ bounds ใช้ [testing](../../../docs/testing-standards.md) และ [verification](../../../docs/verification-standards.md) ออกแบบ tests, readiness, packaged-app smoke และ cleanup พร้อม expected outcomes ไม่แต่ง actual results
+- Measurable objectives, prerequisite concepts, core/optional scope และสิ่งที่ไม่ทำ
+- Exact version candidates, official sources และ evidence status ตรวจ version-dependent APIs ไม่เดา support
+- รายการไฟล์/classes พร้อมหน้าที่, base package, request flow และ transport lifecycle
+- Dataset, IDs, mappings/settings, index/pipeline/alias ownership, setup/reset และ cleanup
+- HTTP methods/prefixes, input validation, success/error contract, configuration/env/TLS และ expected assertions
+- Lazy invocation, fresh retry, sync/async failures, deadlines, cancellation limits และ concurrency/buffer bounds
+- Tests ราย layer และ command-level verification สำหรับ Maven, readiness, packaged app, API assertions และ cleanup ระบุ expected outcomes แยกจาก actual results
 
-ส่งมอบ files พร้อมหน้าที่, command-level verification, risks/trade-offs, assumptions และ unresolved decisions แล้วหยุดที่แผน ไม่สร้าง chapter หรือเริ่ม implementation เอง
+ทุก objective ต้องมี coverage row ของ Spring Data reactive และ official async ระบุ actual API tier: repository/operations/template, reactive client, explicit fallback หรือ unresolved โดยเฉพาะ vector/hybrid ไม่ถือ direct fallback เป็น native Spring Data coverage วาง shared DTO/fixture semantics และ parity assertions พร้อม separate route prefixes
 
-## Two-approach planning
-
-อ่าน [dual-approach contract](../../../docs/dual-approach.md) และ [ADR 0004](../../../docs/decisions/0004-two-learning-approaches.md) ก่อนวางแผน ทุก objective มี Spring Data reactive และ official async coverage row ระบุ repository/operations/template/reactive client API ที่ใช้จริง พร้อม candidate versions/source/API gaps ไม่สมมติ native support โดยเฉพาะ vector/hybrid
-
-วาง target route prefixes/classes สองชุดและ shared DTO/fixture semantics พร้อม parity assertions, mapping/error comparison และ transport ownership ตรวจ method invocation ที่อาจ eager แม้คืน Mono หากต้อง fallback ให้ระบุระดับ ไม่เอา direct service มาเปลี่ยนชื่อเป็น SpringData หากทำ mandatory objective สองแนวทางไม่ได้ ให้รายงาน decision ที่ต้องยุติ
+ส่งมอบ files/responsibilities, acceptance criteria, risks/trade-offs, assumptions และ unresolved decisions หาก mandatory objective ทำสองแนวทางไม่ได้ให้เสนอ decision แก่ผู้ใช้ ไม่ silently ยกเว้น approach แล้วหยุดที่แผน
