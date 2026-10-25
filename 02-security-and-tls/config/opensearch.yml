@@ -1,0 +1,20 @@
+cluster.name: learning-ch02
+node.name: learning-ch02-node
+network.host: 0.0.0.0
+network.publish_host: opensearch
+discovery.type: single-node
+plugins.security.allow_unsafe_democertificates: false
+plugins.security.allow_default_init_securityindex: false
+plugins.security.ssl.transport.pemcert_filepath: certs/node/node.pem
+plugins.security.ssl.transport.pemkey_filepath: certs/node/node.key
+plugins.security.ssl.transport.pemtrustedcas_filepath: certs/public/ca.pem
+plugins.security.ssl.transport.enforce_hostname_verification: true
+plugins.security.ssl.http.enabled: true
+plugins.security.ssl.http.pemcert_filepath: certs/http/http.pem
+plugins.security.ssl.http.pemkey_filepath: certs/http/http.key
+plugins.security.ssl.http.pemtrustedcas_filepath: certs/public/ca.pem
+plugins.security.ssl.http.clientauth_mode: OPTIONAL
+plugins.security.nodes_dn:
+  - CN=opensearch,OU=Chapter02,O=Learning
+plugins.security.authcz.admin_dn:
+  - CN=security-admin,OU=Chapter02,O=Learning

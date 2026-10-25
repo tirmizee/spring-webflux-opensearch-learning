@@ -5,7 +5,7 @@
 | # | Chapter | เรียนรู้และพิสูจน์ | Status |
 |---|---|---|---|
 | 01 | [01-basic-connection](../01-basic-connection/) | สองแนวทางของ cluster info/health, shared lifecycle, failure และ parity | Verified |
-| 02 | `02-security-and-tls` | TLS, authentication, least privilege และ forbidden operations | Planned |
+| 02 | [02-security-and-tls](../02-security-and-tls/) | TLS, authentication, least privilege และ forbidden operations | Verified |
 | 03 | `03-index-mappings-and-settings` | Explicit mappings, settings และ invalid document types | Planned |
 | 04 | `04-document-crud` | Create/get/update/delete, conflicts และ refresh visibility | Planned |
 | 05 | `05-full-text-search` | Match, multi-match, phrase, BM25 และ boosting | Planned |

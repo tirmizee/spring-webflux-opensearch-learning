@@ -1,0 +1,14 @@
+_meta:
+  type: roles
+  config_version: 2
+ch02_monitor:
+  cluster_permissions:
+    - cluster:monitor/main
+    - cluster:monitor/health
+  index_permissions: []
+  tenant_permissions: []
+ch02_info_only:
+  cluster_permissions:
+    - cluster:monitor/main
+  index_permissions: []
+  tenant_permissions: []
