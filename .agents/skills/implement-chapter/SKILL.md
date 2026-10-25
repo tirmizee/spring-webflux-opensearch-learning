@@ -1,11 +1,11 @@
 ---
 name: implement-chapter
-description: สร้างหรือแก้ chapter ที่อนุมัติ สองแนวทาง Spring Data OpenSearch reactive และ official async พร้อม tests, parity, README และ verification evidence
+description: สร้างหรือแก้ chapter ที่อนุมัติ สองแนวทาง Spring Data OpenSearch reactive และ official async ตาม approved plan พร้อม tests, parity และเอกสาร แล้วส่งต่อ REVIEW และ VERIFY
 ---
 
 # Implement chapter
 
-ใช้เมื่อผู้ใช้สั่ง implement หรือแก้บทชัดเจน ทำภายใน scope ที่อนุมัติ คำขอ plan ไม่อนุญาต implementation
+ใช้ใน IMPLEMENT stage ตาม [chapter workflow](../../../AGENTS.md#chapter-workflow) บทใหม่ต้องมีแผนที่ผู้ใช้อนุมัติอย่างชัดเจนก่อน หากยังไม่มีให้ใช้ plan-chapter และหยุดที่ approval gate ทำตาม approved objectives/endpoints/dependencies/tests และ acceptance criteria ไม่แก้ unrelated chapters
 
 อ่าน [AGENTS.md](../../../AGENTS.md), [roadmap](../../../docs/learning-roadmap.md), existing chapter/plan และ git state รักษางานเดิม ตรวจ [compatibility](../../../docs/compatibility.md) และยุติ dependent decisions ก่อนสร้างโค้ดที่พึ่ง decision นั้น ไม่สร้าง probe project เพิ่มเอง
 
@@ -17,6 +17,6 @@ Implement Spring Data reactive และ official OpenSearchAsyncClient ตา�
 
 เพิ่ม unit/reactive/HTTP tests และ real-server parity tests ของทั้งสอง path ตรวจ lazy/resubscription/errors/cancellation และ resource isolation ไม่ disable ITs หรือลด assertions เพื่อผ่าน หาก feature gap ทำ mandatory objective ไม่ได้ให้รายงาน decision ที่ต้องยุติ
 
-รัน `./mvnw -B -ntp clean verify` จาก directory ของบท พร้อม applicable Compose/packaged-app/API checks บันทึก actual commands, source state, suite counts, failures/retests และ cleanup ใน `VERIFICATION.md` ตาม template แยก historical evidence จากผลปัจจุบัน หาก environment ขัดขวางให้รายงาน BLOCKED/NOT VERIFIED
+ระหว่าง IMPLEMENT รัน compile/tests เพื่อวินิจฉัยและแก้ปัญหาได้ แต่ไม่ถือเป็น final VERIFY สร้าง README และ VERIFICATION.md ตาม template โดยไม่ใส่ผลที่ยังไม่ได้รัน สำหรับบทใหม่ เมื่อ implementation พร้อมให้ใช้ review-chapter เทียบกับ approved plan แบบ read-only รายงาน findings ก่อนกลับมาแก้ใน IMPLEMENT แล้ว REVIEW ซ้ำ เมื่อไม่มีปัญหาค้างจึงทำ VERIFY แยกตาม testing standards
 
-เมื่อเพิ่มบทให้เพิ่มชื่อใน explicit matrix ของ `.github/workflows/chapter-verification.yml` ตรวจ README/local links และปรับ roadmap เป็น Implemented หรือ Verified ตามหลักฐาน สรุปผลแล้วหยุด ไม่เริ่มบทถัดไป ไม่ commit/push เอง
+เมื่อเพิ่มบทให้เพิ่มชื่อใน explicit matrix ของ `.github/workflows/chapter-verification.yml` ตรวจ README/local links และใช้ Implemented จน REVIEW และ required verification gates ผ่าน หลัง VERIFY จึงบันทึก actual evidence และกำหนด Verified ตาม testing standards สรุปผลแล้วหยุด ไม่เริ่มบทถัดไป ไม่ commit/push เอง สำหรับ bug fixes ใช้ลำดับยกเว้นที่ AGENTS.md กำหนด

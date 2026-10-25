@@ -43,6 +43,8 @@ Mock tests ไม่พิสูจน์ server query semantics; future cancell
 
 ## Verification
 
+ทำ VERIFY แยกจาก read-only REVIEW ตาม [chapter workflow](../AGENTS.md#chapter-workflow) ของบทใหม่ การรัน tests ระหว่าง IMPLEMENT เพื่อวินิจฉัยทำได้ แต่ไม่แทน REVIEW หรือ final VERIFY บน source ที่ review แล้ว หากพบปัญหาให้รายงานและแก้ตาม workflow ก่อนรับผลเป็น final evidence
+
 [Learning roadmap](learning-roadmap.md) เก็บ chapter lifecycle (`Planned`, `Implemented`, `Verified`) ส่วนรายงานใช้ gate statuses `PASS`, `FAIL`, `BLOCKED`, `NOT VERIFIED`, `N/A` สถานะ N/A ต้องมีเหตุผล ไม่แทน mandatory runtime gate ด้วย source inspection
 
 | Gate | สิ่งที่รันและตรวจ |
@@ -50,7 +52,7 @@ Mock tests ไม่พิสูจน์ server query semantics; future cancell
 | Environment | java -version, ./mvnw -version, docker version, docker compose version และ OS/CPU |
 | Dependencies | effective POM, relevant dependency tree, exact image tag/digest และ plugins |
 | Build/tests | ./mvnw clean verify; ตรวจ Surefire/Failsafe counts, failures, errors และ skips |
-| Infrastructure | Compose up, ps และ API readiness ด้วย protocol/auth ที่ถูกต้อง |
+| Infrastructure | docker compose config, Compose up, ps และ API readiness ด้วย protocol/auth ที่ถูกต้อง |
 | Application | รัน packaged JAR ตาม README แล้วตรวจ readiness และ process ownership |
 | API | ทุก implemented endpoint มี success และ representative meaningful failure; assert HTTP status และ fields |
 | OpenSearch data | ตรวจ mappings/data/query behavior จริง ห้ามใช้ mock เป็น integration proof |
@@ -61,9 +63,9 @@ Mock tests ไม่พิสูจน์ server query semantics; future cancell
 
 เก็บ exact commands, exit codes, test counts และ output excerpts เท่าที่จำเป็น Redact credentials แต่คงหลักฐานที่ตรวจได้ Report locations ต้องระบุถ้าเป็น local ephemeral target ที่ไม่ได้ commit อย่า link ไปไฟล์ไม่มีจริงเพื่อให้ดูเหมือนมีหลักฐาน
 
-Verified ต้องผ่าน mandatory objectives ของ Spring Data reactive และ official async พร้อม parity/feature coverage ตาม [dual-approach contract](dual-approach.md) รวมทั้งทุก applicable mandatory gate บน final relevant source state ถ้าแก้ behavior/config/tests หลังตรวจ ให้ rerun affected checks รวม smoke flow หลัง final runtime fix Historical report ไม่พิสูจน์ services ปัจจุบันกำลังรัน
+Verified ต้องผ่าน REVIEW โดยไม่มี unresolved defects หรือ missing requirements ตาม approved plan และผ่าน mandatory objectives ของ Spring Data reactive และ official async พร้อม parity/feature coverage ตาม [dual-approach contract](dual-approach.md) รวมทั้งทุก applicable mandatory gate บน final relevant source state ถ้าแก้ behavior/config/tests หลังตรวจ ให้ rerun affected checks รวม smoke flow หลัง final runtime fix Historical report ไม่พิสูจน์ services ปัจจุบันกำลังรัน
 
-FAIL คือรันแล้วไม่ผ่าน BLOCKED คือ precondition ทำให้ตรวจไม่ได้ NOT VERIFIED คือยังไม่รัน ทั้งสามไม่ใช่ PASS หากโค้ดมีแล้วแต่ตรวจไม่ครบ lifecycle คง Implemented และระบุข้อจำกัด อย่าแก้ report เก่าให้กลายเป็นผลใหม่โดยไม่ได้รัน
+PASS คือรันแล้วผ่าน expected assertions; FAIL คือรันแล้วไม่ผ่าน; NOT VERIFIED คือยังไม่รันหรือไม่มีหลักฐานเพียงพอ; BLOCKED ระบุ precondition ที่ขัดขวางและไม่ถือว่าตรวจผ่าน หาก Docker/OpenSearch ไม่พร้อมต้องระบุ required ITs เป็น BLOCKED/NOT VERIFIED ไม่ skip แล้วประกาศ Verified หากโค้ดมีแล้วแต่ตรวจไม่ครบ lifecycle คง Implemented และระบุข้อจำกัด อย่าแก้ report เก่าให้กลายเป็นผลใหม่โดยไม่ได้รัน
 
 เมื่อ scope ขยายจากหนึ่งเป็นสองแนวทาง ให้คงผลเดิมเป็น historical evidence พร้อม timestamp/source ไม่ลบหรือแก้ expected/actual เก่าให้ดูเหมือนตรวจสอง path แล้ว Overall lifecycle เป็น Implemented จนกว่าจะผ่านข้อกำหนดใหม่ Scope amendment ต้องอยู่ทั้ง README และ VERIFICATION
 
