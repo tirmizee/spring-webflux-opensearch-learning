@@ -1,0 +1,25 @@
+@baseUrl = http://127.0.0.1:8080
+
+### Official async client: cluster info
+GET {{baseUrl}}/api/java-client/cluster/info
+Accept: application/json
+
+### Official async client: cluster health
+GET {{baseUrl}}/api/java-client/cluster/health
+Accept: application/json
+
+### Spring Data reactive client: cluster info
+GET {{baseUrl}}/api/spring-data/cluster/info
+Accept: application/json
+
+### Spring Data reactive client: cluster health
+GET {{baseUrl}}/api/spring-data/cluster/health
+Accept: application/json
+
+### Legacy alias ของ official client: info
+GET {{baseUrl}}/api/cluster/info
+Accept: application/json
+
+### Legacy alias ของ official client: health
+GET {{baseUrl}}/api/cluster/health
+Accept: application/json

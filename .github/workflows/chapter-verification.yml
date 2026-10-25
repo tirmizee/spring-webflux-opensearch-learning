@@ -1,0 +1,61 @@
+name: Chapter Maven verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      chapters: ${{ steps.chapters.outputs.json }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - id: chapters
+        name: Discover implemented chapters
+        shell: bash
+        run: |
+          chapters="$(python3 scripts/check_foundation.py --discover)"
+          echo "json=$chapters" >> "$GITHUB_OUTPUT"
+          if [[ "$chapters" == '[]' ]]; then
+            echo 'No chapters exist yet; no Java/OpenSearch verification was performed.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+  verify:
+    needs: discover
+    if: needs.discover.outputs.chapters != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        chapter: ${{ fromJSON(needs.discover.outputs.chapters) }}
+    env:
+      CHAPTER: ${{ matrix.chapter }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Check Docker availability
+        run: docker version
+      - name: Run unit and OpenSearch integration tests
+        run: bash scripts/verify-chapter.sh "$CHAPTER"
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ matrix.chapter }}
+          path: |
+            ${{ matrix.chapter }}/target/surefire-reports/
+            ${{ matrix.chapter }}/target/failsafe-reports/
+          if-no-files-found: warn

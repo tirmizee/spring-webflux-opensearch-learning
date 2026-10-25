@@ -1,0 +1,20 @@
+# Build / tooling
+**/target/
+**/__pycache__/
+*.py[cod]
+.idea/
+.vscode/
+*.iml
+.DS_Store
+# Secrets / generated local configuration
+.env
+.env.*
+!.env.example
+*.log
+*.pid
+*.key
+*.p12
+*.pfx
+*.jks
+**/certs/generated/
+**/models/downloaded/
