@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: security-and-tls
+server:
+  address: ${APP_HOST:127.0.0.1}
+  port: ${APP_PORT:8082}
+learning:
+  opensearch:
+    uri: ${OPENSEARCH_URI:https://localhost:9202}
+    ca-certificate: ${OPENSEARCH_CA_CERTIFICATE:certs/generated/public/ca.pem}
+    username: ${OPENSEARCH_USERNAME:ch02_monitor}
+    password-file: ${OPENSEARCH_PASSWORD_FILE:certs/generated/secrets/monitor.password}
+    connect-timeout: ${OPENSEARCH_CONNECT_TIMEOUT:1s}
+    pool-timeout: ${OPENSEARCH_POOL_TIMEOUT:1s}
+    response-timeout: ${OPENSEARCH_RESPONSE_TIMEOUT:3s}
+    request-timeout: ${OPENSEARCH_REQUEST_TIMEOUT:5s}

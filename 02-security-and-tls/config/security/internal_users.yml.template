@@ -1,0 +1,9 @@
+_meta:
+  type: internalusers
+  config_version: 2
+ch02_monitor:
+  hash: '@MONITOR_HASH@'
+  reserved: true
+ch02_info_only:
+  hash: '@INFO_HASH@'
+  reserved: true

@@ -1,0 +1,9 @@
+_meta:
+  type: rolesmapping
+  config_version: 2
+ch02_monitor:
+  users:
+    - ch02_monitor
+ch02_info_only:
+  users:
+    - ch02_info_only

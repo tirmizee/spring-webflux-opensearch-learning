@@ -1,0 +1,13 @@
+@baseUrl = http://127.0.0.1:8082
+
+### Spring Data info
+GET {{baseUrl}}/api/spring-data/cluster/info
+
+### Spring Data health
+GET {{baseUrl}}/api/spring-data/cluster/health
+
+### Official client info
+GET {{baseUrl}}/api/java-client/cluster/info
+
+### Official client health
+GET {{baseUrl}}/api/java-client/cluster/health
