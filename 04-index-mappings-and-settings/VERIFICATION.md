@@ -202,3 +202,41 @@ PASS: `env JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/H
 Current publication fingerprint (33 files, algorithm/exclusions เดิม): `8898a7633e442184eaa8059e4706bdd4aeb8963680d313a4c8689be2495e7bf2`
 
 Current hash ของ ProductSampleService.java: `8c97d0dc0460559d0358c3cd8dd51352fbd143cd7cbfbf6546721e355a26233d` แทน original manifest entry `335ce9369dc92a69e5c8bd405699df94592aaa66d01d383b798075926f77073f` รายการอื่นและ root context fingerprint คงเดิม Chapter 03 formatting edit อยู่นอก commit/PR นี้
+
+
+## README walkthrough amendment — 2026-10-26
+
+บันทึกเวลา `2026-10-26T20:37:07+07:00` (Asia/Bangkok) บน branch `codex/chapter-04-index-mappings-and-settings`, HEAD `243426eb80f7a6d96907f3f3cb9a86e28ee7062b` พร้อม uncommitted README edits และ Chapter 03 edit เดิมที่ไม่ได้แตะในงานนี้ รอบนี้แก้เฉพาะเอกสารและเพิ่มหลักฐาน ไม่เปลี่ยน chapter lifecycle status และไม่แทนที่ historical manifests ด้านบน
+
+README SHA-256 ที่ตรวจ: `03f4af27dec84e4efe605da1173bdf7127a4e498d37f86a341430095f54e0c5f` Java source/configuration/tests ไม่เปลี่ยนในรอบนี้
+
+### Commands และผลจริง
+
+รันจาก directory ของบทด้วย JDK 21; คำสั่ง shell มี exit `0` เว้นแต่ระบุไว้:
+
+```bash
+env OPENSEARCH_PORT=19204 docker compose -p ch04-readme-check config --quiet
+env OPENSEARCH_PORT=19204 docker compose -p ch04-readme-check up -d --wait opensearch
+curl -fsS --max-time 5 'http://localhost:19204/_cluster/health?wait_for_status=yellow&timeout=3s'
+env JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home ./mvnw -B -ntp clean verify -Dmaven.compiler.showDeprecation=true
+/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home/bin/java -jar target/index-mappings-and-settings.jar --server.port=18084 --opensearch.uris=http://localhost:19204 --learning.index-name=ch04-readme-20261026
+python3 /private/tmp/ch04-readme-walkthrough.py
+kill -TERM 71761
+env OPENSEARCH_PORT=19204 docker compose -p ch04-readme-check down
+```
+
+- **PASS environment/infrastructure:** Compose project แยก `ch04-readme-check` ใช้ volume ใหม่และ OpenSearch port `19204`; health เป็น `green`, `timed_out=false`, nodes `1` ไม่ใช้หรือลบ index/volume เดิมของผู้เรียน
+- **PASS build/tests:** รัน Maven นอก sandbox ได้ `BUILD SUCCESS`, 36 unit/HTTP tests + 6 integration tests, failures/errors/skipped ทั้งหมด `0` ตรวจ XML reports จริงแล้ว Deprecated REST transport warnings ยังคงเปิดเผย ไม่มีการแก้ flags เพื่อข้าม tests
+- **Sandbox attempt:** Maven รอบแรกภายใน sandbox exit `1` เพราะ Mockito/Byte Buddy self-attach ไม่สำเร็จ (36 tests, errors `13`, failures/skipped `0`, ยังไม่ถึง ITs) รันคำสั่งเดิมนอก sandbox แล้วผ่าน ไม่ถือรอบแรกเป็น product regression Log เดิม `/private/tmp/ch04-readme-latest-verify.log`; รอบผ่าน `/private/tmp/ch04-readme-latest-verify-unrestricted.log`
+- **PASS packaged app:** PID `71761` เริ่มที่ port `18084` โดยใช้ `ch04-readme-20261026`; startup log `/private/tmp/ch04-readme-latest-app.log` เป็น long-running process จึงตรวจ startup/HTTP และ graceful shutdown แยกจาก shell exit ตอนเปิด
+- **PASS README examples:** runner อ่าน Bash blocks จาก README Step 5–11 ทั้ง 17 blocks แล้วรันคำสั่งจริงตามลำดับ เปลี่ยนเฉพาะ URLs/index เป็นค่าของระบบแยกและตัด `cd` ที่ซ้ำกับ working directory ออก ตรวจ exit/status/payload ของ missing index, create, mapping/settings, save/get, dynamic settings/restore, invalid documents, field type/final settings, refresh, search และ DELETE
+- **PASS new search examples:** `match name=keyboard` → `["p-001"]`; `term name.raw=Mechanical Keyboard` → `["p-001"]`; `term name.raw=keyboard` → `[]` Runner assert ผลจริง ไม่ใช้ mock
+- **PASS smoke:** Bash block สุดท้ายเรียก `bash scripts/smoke-test.sh` พร้อม `APP_URL=http://localhost:18084`, `OPENSEARCH_URI=http://localhost:19204`, `LEARNING_INDEX_NAME=ch04-readme-20261026` ครบ assertions และ cleanup ของ script Log `/private/tmp/ch04-readme-walkthrough.log` ลงท้าย `PASS all 17 README Bash blocks (Steps 5–11) including match/term comparisons and smoke`
+- **PASS cleanup:** script ลบ owned index แล้ว ส่ง TERM เฉพาะ owned app; process exit `143` ตาม SIGTERM และ log ระบุ `Graceful shutdown complete` จากนั้น Compose down เฉพาะ project ที่สร้าง exit `0` ไม่ใส่ `-v` จึงเก็บ volume สำหรับรอบตรวจนี้ไว้
+- **PASS document checks:** step order, สารบัญ anchors/local source links, Bash syntax, JSON examples/request bodies และ `git diff --check`
+
+### ขอบเขตที่ไม่ได้รันซ้ำ
+
+ไม่ได้ copy `.env.example` ทับ `.env` หรือใช้ default app/OpenSearch ports `8084/9204` ในรอบนี้ ใช้ equivalent CLI/env overrides เพื่อแยก resources ไม่ได้ทดสอบ troubleshooting ทุกกรณี, restart/resume ด้วยข้อมูลเดิม, optional lowercase keyword/add-field exercises หรือ platform อื่น การเปรียบเทียบ text/keyword เป็น native OpenSearch experiment ไม่ได้เพิ่ม application search endpoint
+
+Logs และ runner ใน `/private/tmp` เป็น local ephemeral evidence ไม่ได้ commit และอาจถูกล้างภายหลัง
