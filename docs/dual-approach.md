@@ -77,3 +77,11 @@ Chapter 03 เป็นข้อยกเว้นที่ผู้ใช้อ
 ใช้ ReactiveOpenSearchClient สำหรับ cluster metadata และต้องผ่าน API Key permission/error/lifecycle fixtures, JVM trust/hostname failure tests และ packaged smoke ไม่อ้าง repository mapping coverage จาก template wiring Tests ต้องยืนยัน client/transport/template/converter bean factory origins จริง ใช้ starter auto-configuration + RestClientBuilderCustomizer เพิ่ม API Key ไม่สร้าง client/transport เอง ไม่ exclude auto-configurations และยอมรับ default deprecated REST transport ของ exact release โดยรายงาน warnings และ native lifecycle ตามจริง
 
 Configuration มีชุดเดียวใต้ `opensearch` ใช้ JVM default trust ไม่มี application CA property/loader; local private CA เตรียมผ่าน JVM truststore ภายนอก application Infrastructure ไม่พึ่ง Chapter 02 สถานะ Verified ต้องมี REVIEW และ mandatory gates ของ starter ตาม testing standards
+
+## Chapter 04: approved starter-only scope
+
+Chapter 04 ใช้ standalone `spring-data-opensearch-starter` project แนวทางเดียวตาม approved plan ไม่มี official application path หรือ cross-path parity ใช้ local HTTP ปิด security ใน Compose/Testcontainers ไม่เพิ่ม authentication/TLS หรือ infrastructure dependency จากบทอื่น
+
+ใช้ mapping annotations + converter, `ReactiveIndexOperations` สำหรับ lifecycle/mapping/settings read และ `ReactiveElasticsearchOperations` สำหรับ sample save/get Dynamic settings write ใช้ `ReactiveOpenSearchClient.indices().putSettings` ต้องระบุเป็น reactive-client tier ใช้ starter auto-configuration และ timeout customizer ไม่สร้าง client/transport เอง ยอมรับ native deprecated REST defaults พร้อมเปิดเผย warnings และตรวจ shutdown
+
+Required coverage คือ generated strict mapping และ `_class`, converter round-trip/ID metadata, persisted sample/keyword multi-field, invalid numeric strings/unknown fields ที่ native server ปฏิเสธ, dynamic settings read-back, final shard/field type rejection, no auto-create, HTTP failures และ packaged smoke ทุก API เกณฑ์ Verified ใช้ gates เดิมตาม testing standards ภายใต้ approved scope นี้

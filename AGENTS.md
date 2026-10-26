@@ -6,6 +6,8 @@ Repository นี้ใช้เรียน Java 21, Spring Boot 4.x, Spring We
 
 Chapter 03 `03-api-key-authentication` ใช้ **spring-data-opensearch-starter แนวทางเดียว** ตามคำอนุมัติผู้ใช้ เป็น standalone Maven project ที่ directory ของบท ไม่เพิ่ม core-only หรือ official async application path และไม่บังคับ two-path parity สำหรับบทนี้ ใช้ starter auto-configuration + RestClientBuilderCustomizer สำหรับ API Key ไม่สร้าง client/transport เองและไม่ exclude auto-configurations ใช้ JVM default trust และ configuration ชุดเดียวใต้ `opensearch` ยอมรับ default deprecated REST transport ของ exact release พร้อมเปิดเผย warnings และตรวจ shutdown ตาม native lifecycle ดู [contract exception](docs/dual-approach.md#chapter-03-approved-starter-only-scope)
 
+Chapter 04 `04-index-mappings-and-settings` ใช้ **spring-data-opensearch-starter แนวทางเดียว** ตาม approved plan โดยไม่มี authentication/TLS ใช้ local HTTP และ starter auto-configuration + response-timeout customizer ไม่สร้าง client/transport เอง ไม่มี official application path หรือ two-path parity ตรวจ mapping annotations/converter, reactive operations และ dynamic settings ผ่าน reactive-client tier ตาม [contract exception](docs/dual-approach.md#chapter-04-approved-starter-only-scope)
+
 ## Scope และการทำงาน
 
 - อธิบายและเขียนเอกสารการเรียนรู้เป็นภาษาไทย คง technical terms, code และ identifiers เป็น English

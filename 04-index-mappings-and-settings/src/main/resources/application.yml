@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: index-mappings-and-settings
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+  http:
+    codecs:
+      max-in-memory-size: 256KB
+server:
+  address: ${APP_HOST:127.0.0.1}
+  port: ${APP_PORT:8084}
+opensearch:
+  uris: ${OPENSEARCH_URI:http://localhost:9204}
+  connection-timeout: ${OPENSEARCH_CONNECT_TIMEOUT:1s}
+  socket-timeout: ${OPENSEARCH_RESPONSE_TIMEOUT:3s}
+learning:
+  index-name: ${LEARNING_INDEX_NAME:ch04-products}
+  request-timeout: ${OPENSEARCH_REQUEST_TIMEOUT:5s}

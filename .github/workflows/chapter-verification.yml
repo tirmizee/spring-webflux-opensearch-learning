@@ -23,6 +23,8 @@ jobs:
             artifact: 02-security-and-tls
           - chapter: 03-api-key-authentication
             artifact: 03-api-key-authentication
+          - chapter: 04-index-mappings-and-settings
+            artifact: 04-index-mappings-and-settings
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

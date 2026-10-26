@@ -7,7 +7,7 @@
 | 01 | [01-basic-connection](../01-basic-connection/) | สองแนวทางของ cluster info/health, shared lifecycle, failure และ parity | Verified |
 | 02 | [02-security-and-tls](../02-security-and-tls/) | TLS, authentication, least privilege และ forbidden operations | Verified |
 | 03 | [03-api-key-authentication](../03-api-key-authentication/) | API Key lifecycle ผ่าน starter auto-configuration + customizer และ JVM trust | Verified |
-| 04 | `04-index-mappings-and-settings` | Explicit mappings, settings และ invalid document types | Planned |
+| 04 | [04-index-mappings-and-settings](../04-index-mappings-and-settings/) | Starter-only: explicit mappings, converter, dynamic/final settings และ invalid document types | Verified |
 | 05 | `05-document-crud` | Create/get/update/delete, conflicts และ refresh visibility | Planned |
 | 06 | `06-full-text-search` | Match, multi-match, phrase, BM25 และ boosting | Planned |
 | 07 | `07-filtering-and-bool-queries` | Term/terms, range, exists และ query/filter context | Planned |
@@ -26,7 +26,7 @@
 | 20 | `20-semantic-search-and-embeddings` | Embedding provenance, model metadata และ semantic retrieval | Planned |
 | 21 | `21-hybrid-search-and-relevance` | BM25 + vector, search pipeline และ relevance evaluation | Planned |
 
-ทุกบทต้องมีสองแนวทางและ coverage comparison ตาม [dual-approach contract และ roadmap coverage](dual-approach.md) Advanced features ต้องระบุ abstraction gaps/fallback ตามหลักฐาน ไม่สมมติ Spring Data native support
+บททั่วไปมีสองแนวทางและ coverage comparison ตาม [dual-approach contract และ roadmap coverage](dual-approach.md) Chapter 03–04 มี approved starter-only exceptions ใน AGENTS.md Advanced features ต้องระบุ abstraction gaps/fallback ตามหลักฐาน ไม่สมมติ Spring Data native support
 
 Tests มีตั้งแต่บทแรก Chapter 17 เจาะลึก testing ทุกบทมี setup ของตัวเอง ไม่ต้องรันบทก่อนหน้า ลำดับข้างต้นเป็นคำแนะนำด้านความรู้
 
@@ -41,7 +41,7 @@ Tests มีตั้งแต่บทแรก Chapter 17 เจาะลึ�
 | 01 Connection | Reactive client metadata/cluster APIs; ตรวจ wiring | Async info/health และ error/lifecycle parity |
 | 02 Security | Reactive configuration, trusted TLS และ app identity | Transport TLS/auth ด้วยสิทธิ์เดียวกัน |
 | 03 API Key | Starter: auto client/transport/template/converter + API Key customizer | ไม่มี second path ตาม approved exception |
-| 04 Mappings | Mapping annotations, converter และ index operations | Explicit mappings/settings และเปรียบเทียบ generated mapping |
+| 04 Mappings | Starter: annotations/converter/index operations; dynamic settings ใช้ reactive-client tier | ไม่มี second path; ตรวจ generated mapping/settings และ native server failures |
 | 05 CRUD | Reactive repository และ operations | Async CRUD, ID/conflict/refresh parity |
 | 06 Full-text | Operations/query abstractions ที่รองรับ | Typed match/multi_match/phrase และ relevance assertions |
 | 07 Filtering | Reactive query/filter composition | Bool/term/range boundaries บน fixtures เดียวกัน |

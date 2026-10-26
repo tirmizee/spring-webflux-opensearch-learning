@@ -38,3 +38,5 @@ Chapter 01 ใช้ JDK 21, Docker และ Maven Wrapper; Compose/packaged-ap
 แนวคิดเริ่มต้นอ้างอิง [spring-webflux-elasticsearch-learning](https://github.com/tirmizee/spring-webflux-elasticsearch-learning) โครงการนี้ปรับเป็น OpenSearch และสอง integration approaches ยังไม่เลือก repository license ต้องตรวจสิทธิ์ก่อน reuse source code, datasets หรือ embedding models
 
 [Chapter 03: API Key Authentication](03-api-key-authentication/) ใช้ spring-data-opensearch-starter auto-configuration + API Key customizer แนวทางเดียว เป็น standalone Maven project ตาม approved exception ของบทนี้
+
+[Chapter 04: Index mappings and settings](04-index-mappings-and-settings/) ใช้ starter auto-configuration แนวทางเดียว เรียน annotations/converter, strict mapping และ dynamic/final settings บน local HTTP โดยไม่มี authentication/TLS
