@@ -71,3 +71,9 @@ Metadata methods ของ reactive client ถูกครอบ Mono.defer ม�
 ผู้ใช้เลือก spring-data-opensearch-starter 3.1.4 auto-configuration + RestClientBuilderCustomizer เพื่อโฟกัส API Key แทน custom ApacheHttpClient5Transport Starter สร้าง RestClientTransport/ReactiveOpenSearchClient/data infrastructure อัตโนมัติ Builder/transport default deprecated ใน exact release นี้ ต้องเปิดเผย warnings ไม่ถือว่า latest หมายถึงทุก internal API ไม่ deprecated
 
 ตรวจ source JAR 3.1.4 ที่ resolve จริง: built-in connection-timeout คุม connection/pool acquisition; บท customize response timeout จาก socket-timeout ที่ starter รุ่นนี้ยังไม่ได้ apply เอง URI ไม่มี trailing slash, ไม่มี Basic credentials/path prefix Application ใช้ JVM default SSLContext ไม่โหลด CA เอง รายงาน runtime ของ scope ใหม่อยู่ [Chapter 03 verification](../03-api-key-authentication/VERIFICATION.md) ไม่ใช้ผลของ custom-transport implementation เดิมแทน
+
+## Chapter 04: starter mapping/settings scope
+
+ใช้ exact baseline เดียวกับ Chapter 03: Boot 4.1.2, starter 3.1.4, SDK 3.10.0 และ server 3.9.0 บทนี้เพิ่มการตรวจ annotations, converter และ reactive index/document operations พร้อม native settings API ผล runtime และ platform จำกัดตาม [Chapter 04 verification](../04-index-mappings-and-settings/VERIFICATION.md) ไม่ขยายผลไปยัง CRUD/vector/hybrid features ที่ยังไม่ทดสอบ
+
+`ReactiveIndexOperations`/`ReactiveElasticsearchOperations` เป็น Spring Data abstractions โดย implementation เป็น OpenSearch `ReactiveIndicesTemplate`/`ReactiveOpenSearchTemplate` ไม่ใช้ Elasticsearch Java client Dynamic settings write ใช้ native reactive-client tier และ default REST transport ของ starter ยังคง deprecated ไม่มีการเปลี่ยน client architecture เพื่อซ่อน warnings
