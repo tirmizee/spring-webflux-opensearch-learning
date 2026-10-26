@@ -152,3 +152,7 @@ Bulk HTTP 200 อาจมี item failures ทดสอบ partial success แ�
 StepVerifier/Mockito แยกสอง approach พิสูจน์ no invocation ก่อน subscribe, fresh call เมื่อ retry, sync throw, async failure และ cancellation ของ bridge Real-server tests พิสูจน์ mapping/query/transport behavior ที่เกี่ยวข้อง การตรวจชื่อ thread อย่างเดียวไม่พิสูจน์ว่าไม่มี blocking
 
 แหล่งอ้างอิง: [client source](https://github.com/opensearch-project/opensearch-java/blob/main/java-client/src/main/java/org/opensearch/client/opensearch/OpenSearchAsyncClient.java), [Java transport](https://docs.opensearch.org/latest/clients/java/), [Reactor Mono API](https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html) ตรวจเทียบ resolved versions เสมอ
+
+### Chapter 03: starter-managed infrastructure
+
+ตาม approved exception ใน AGENTS.md ให้ starter สร้าง client/transport/data beans และใช้ RestClientBuilderCustomizer เพิ่ม API Key ห้ามอ้างว่าต้องสร้าง transport เองเพื่อใช้ API Key Default REST transport ของ exact release deprecated จึงต้องรายงาน warnings โดยไม่ suppress Lifecycle ใช้ค่า default ของ library ซึ่งอาจ close underlying client ซ้ำแบบ idempotent ให้ตรวจ context shutdown จริงและไม่อ้าง single-owner design ของบทอื่นกับบทนี้

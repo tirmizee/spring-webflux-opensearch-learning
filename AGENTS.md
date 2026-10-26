@@ -2,6 +2,10 @@
 
 Repository นี้ใช้เรียน Java 21, Spring Boot 4.x, Spring WebFlux และ OpenSearch 3.x ผ่าน Spring Data OpenSearch reactive และ official OpenSearch Java Client สองแนวทาง ทุก chapter เป็น standalone Maven project
 
+## Chapter-specific approved exception
+
+Chapter 03 `03-api-key-authentication` ใช้ **spring-data-opensearch-starter แนวทางเดียว** ตามคำอนุมัติผู้ใช้ เป็น standalone Maven project ที่ directory ของบท ไม่เพิ่ม core-only หรือ official async application path และไม่บังคับ two-path parity สำหรับบทนี้ ใช้ starter auto-configuration + RestClientBuilderCustomizer สำหรับ API Key ไม่สร้าง client/transport เองและไม่ exclude auto-configurations ใช้ JVM default trust และ configuration ชุดเดียวใต้ `opensearch` ยอมรับ default deprecated REST transport ของ exact release พร้อมเปิดเผย warnings และตรวจ shutdown ตาม native lifecycle ดู [contract exception](docs/dual-approach.md#chapter-03-approved-starter-only-scope)
+
 ## Scope และการทำงาน
 
 - อธิบายและเขียนเอกสารการเรียนรู้เป็นภาษาไทย คง technical terms, code และ identifiers เป็น English

@@ -13,7 +13,7 @@ cd 01-basic-connection
 
 Chapter 01 ใช้ JDK 21, Docker และ Maven Wrapper; Compose/packaged-app smoke ใช้ Bash, cURL และ Python 3.9+ ตาม README ของบท Unit/HTTP tests และ OpenSearch integration tests รันผ่าน Maven โดยไม่ต้อง build บทอื่น
 
-ลำดับและสถานะของ 20 บทอยู่ใน [learning roadmap](docs/learning-roadmap.md) หลักฐานแต่ละบทอยู่ใน `VERIFICATION.md` โดย [Chapter 01 report](01-basic-connection/VERIFICATION.md) ระบุผลสองแนวทางและขอบเขตที่ตรวจไว้
+ลำดับและสถานะของ 21 บทอยู่ใน [learning roadmap](docs/learning-roadmap.md) หลักฐานแต่ละบทอยู่ใน `VERIFICATION.md` โดย [Chapter 01 report](01-basic-connection/VERIFICATION.md) ระบุผลสองแนวทางและขอบเขตที่ตรวจไว้
 
 ## เอกสาร
 
@@ -36,3 +36,5 @@ Chapter 01 ใช้ JDK 21, Docker และ Maven Wrapper; Compose/packaged-ap
 ## Reference และสิทธิ์การใช้งาน
 
 แนวคิดเริ่มต้นอ้างอิง [spring-webflux-elasticsearch-learning](https://github.com/tirmizee/spring-webflux-elasticsearch-learning) โครงการนี้ปรับเป็น OpenSearch และสอง integration approaches ยังไม่เลือก repository license ต้องตรวจสิทธิ์ก่อน reuse source code, datasets หรือ embedding models
+
+[Chapter 03: API Key Authentication](03-api-key-authentication/) ใช้ spring-data-opensearch-starter auto-configuration + API Key customizer แนวทางเดียว เป็น standalone Maven project ตาม approved exception ของบทนี้

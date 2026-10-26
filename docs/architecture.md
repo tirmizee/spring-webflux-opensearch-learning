@@ -36,3 +36,5 @@ Chapter 01 implement สอง path แล้ว: `/api/spring-data/cluster/*` �
 Standalone projects ทำให้เลือกเรียนแต่ละบทและรัน tests ได้ทันทีโดยไม่ build หรือ seed บทอื่น ยอมรับการซ้ำของ POM/configuration เพื่อให้บทอ่านและรันได้ด้วยตัวเอง ไม่สร้าง shared runtime module หรือ root Maven reactor
 
 แต่ละบทใช้ชื่อ `NN-topic-name` ตาม [roadmap](learning-roadmap.md) มี POM/Wrapper/Compose/tests ของตัวเองและสอง approach ใน project เดียว ไม่สร้าง empty future directories โครงสร้างและเอกสารประจำบทใช้ [chapter template](chapter-template.md) เพิ่ม packages/resources เฉพาะที่บทใช้งานจริง
+
+Chapter 03 มี approved exception: ใช้ spring-data-opensearch-starter แนวทางเดียว เป็น standalone Maven project ที่ directory ของบท พร้อม Compose/scripts/tests ของตัวเอง ใช้ starter auto-configuration สร้าง client/transport/data infrastructure และ RestClientBuilderCustomizer เพิ่ม API Key โดยไม่ exclude auto-configurations ใช้ JVM default trust ไม่มี core-only project หรือ shared runtime module ดู [contract exception](dual-approach.md#chapter-03-approved-starter-only-scope)

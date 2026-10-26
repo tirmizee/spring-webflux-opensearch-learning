@@ -1,0 +1,23 @@
+_meta:
+  type: config
+  config_version: 2
+config:
+  dynamic:
+    api_tokens:
+      enabled: true
+      max_duration_seconds: 86400
+      max_tokens: 100
+    http:
+      anonymous_auth_enabled: false
+      xff:
+        enabled: false
+    authc:
+      basic_internal_auth_domain:
+        http_enabled: true
+        transport_enabled: false
+        order: 0
+        http_authenticator:
+          type: basic
+          challenge: true
+        authentication_backend:
+          type: intern

@@ -16,9 +16,13 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        chapter:
-          - 01-basic-connection
-          - 02-security-and-tls
+        include:
+          - chapter: 01-basic-connection
+            artifact: 01-basic-connection
+          - chapter: 02-security-and-tls
+            artifact: 02-security-and-tls
+          - chapter: 03-api-key-authentication
+            artifact: 03-api-key-authentication
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -34,7 +38,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-${{ matrix.chapter }}
+          name: test-reports-${{ matrix.artifact }}
           path: |
             ${{ matrix.chapter }}/target/surefire-reports/
             ${{ matrix.chapter }}/target/failsafe-reports/
