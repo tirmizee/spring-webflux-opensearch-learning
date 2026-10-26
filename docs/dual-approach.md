@@ -69,3 +69,11 @@ Spring Data ที่เลือกสำหรับ Chapter 01 คือ 3.1.
 ตรวจ source ของ [ReactiveOpenSearchConfiguration](https://github.com/opensearch-project/spring-data-opensearch/blob/v3.1.4/spring-data-opensearch/src/main/java/org/opensearch/data/client/osc/ReactiveOpenSearchConfiguration.java) พบ default transport เป็น RestClient-based ต้องไม่กล่าวว่า default คือ Apache HttpClient 5
 
 [ReactiveOpenSearchClient.info](https://github.com/opensearch-project/spring-data-opensearch/blob/v3.1.4/spring-data-opensearch/src/main/java/org/opensearch/data/client/osc/ReactiveOpenSearchClient.java) เรียก performRequestAsync ก่อนส่ง future ให้ Mono จึงต้อง defer invocation สำหรับ cold contract ที่เราต้องการ [ReactiveOpenSearchTemplate](https://github.com/opensearch-project/spring-data-opensearch/blob/v3.1.4/spring-data-opensearch/src/main/java/org/opensearch/data/client/osc/ReactiveOpenSearchTemplate.java) ใช้ ReactiveElasticsearchOperations abstraction โดยมี OpenSearch implementation
+
+## Chapter 03: approved starter-only scope
+
+Chapter 03 เป็นข้อยกเว้นที่ผู้ใช้อนุมัติ ใช้ `spring-data-opensearch-starter` แนวทางเดียวใน standalone Maven project ที่ `03-api-key-authentication` ไม่เพิ่ม core-only project หรือ official async application path ไม่ต้องมี cross-approach parity
+
+ใช้ ReactiveOpenSearchClient สำหรับ cluster metadata และต้องผ่าน API Key permission/error/lifecycle fixtures, JVM trust/hostname failure tests และ packaged smoke ไม่อ้าง repository mapping coverage จาก template wiring Tests ต้องยืนยัน client/transport/template/converter bean factory origins จริง ใช้ starter auto-configuration + RestClientBuilderCustomizer เพิ่ม API Key ไม่สร้าง client/transport เอง ไม่ exclude auto-configurations และยอมรับ default deprecated REST transport ของ exact release โดยรายงาน warnings และ native lifecycle ตามจริง
+
+Configuration มีชุดเดียวใต้ `opensearch` ใช้ JVM default trust ไม่มี application CA property/loader; local private CA เตรียมผ่าน JVM truststore ภายนอก application Infrastructure ไม่พึ่ง Chapter 02 สถานะ Verified ต้องมี REVIEW และ mandatory gates ของ starter ตาม testing standards

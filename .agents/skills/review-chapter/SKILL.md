@@ -5,6 +5,8 @@ description: ตรวจ chapter สองแนวทาง Spring Data OpenSe
 
 # Review chapter
 
+ยึด chapter-specific approved scope ใน AGENTS.md ก่อน default two-approach contract ของ skill นี้ ไม่ทำรายละเอียดข้อยกเว้นประจำบทซ้ำใน skill
+
 REVIEW เป็น read-only stage ตาม [chapter workflow](../../../AGENTS.md#chapter-workflow) ไม่แก้ source, report หรือ roadmap ระหว่าง review แม้ผู้ใช้ขอแก้ findings ด้วย ต้องรายงานผลก่อนแล้วจึงกลับ IMPLEMENT ภายใน scope ที่อนุมัติ
 
 อ่าน [AGENTS.md](../../../AGENTS.md), approved plan/acceptance criteria, requested chapter/source state, [compatibility](../../../docs/compatibility.md), [chapter template](../../../docs/chapter-template.md) และ [roadmap](../../../docs/learning-roadmap.md) เลือกอ่าน [engineering](../../../docs/engineering-standards.md), [testing และ verification](../../../docs/testing-standards.md) ตาม scope

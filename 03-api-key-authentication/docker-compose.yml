@@ -1,0 +1,41 @@
+name: os-learning-ch03
+services:
+  opensearch:
+    image: opensearchproject/opensearch:3.9.0
+    hostname: opensearch
+    environment:
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "127.0.0.1:${OPENSEARCH_PORT:-9203}:9200"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+      - ./config/opensearch.yml:/usr/share/opensearch/config/opensearch.yml:ro
+      - ./certs/generated/public:/usr/share/opensearch/config/certs/public:ro
+      - ./certs/generated/node:/usr/share/opensearch/config/certs/node:ro
+      - ./certs/generated/http:/usr/share/opensearch/config/certs/http:ro
+      - ./certs/generated/runtime:/run/app-key:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS --config /run/app-key/monitor.curl --cacert config/certs/public/ca.pem 'https://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=3s' > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+  security-init:
+    image: opensearchproject/opensearch:3.9.0
+    profiles: [bootstrap]
+    entrypoint: [bash, -ec]
+    command:
+      - >-
+        plugins/opensearch-security/tools/securityadmin.sh
+        -h opensearch -p 9200 -cn learning-ch03
+        -cd /bootstrap/security
+        -cacert /bootstrap/public/ca.pem
+        -cert /bootstrap/admin/admin.pem
+        -key /bootstrap/admin/admin.key
+    volumes:
+      - ./certs/generated/public:/bootstrap/public:ro
+      - ./certs/generated/admin:/bootstrap/admin:ro
+      - ./certs/generated/security:/bootstrap/security:ro
+volumes:
+  opensearch-data:

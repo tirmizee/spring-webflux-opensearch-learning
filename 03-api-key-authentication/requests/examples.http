@@ -1,0 +1,5 @@
+### Cluster info
+GET http://127.0.0.1:8083/api/spring-data/cluster/info
+
+### Cluster health
+GET http://127.0.0.1:8083/api/spring-data/cluster/health

@@ -65,3 +65,9 @@ Metadata methods ของ reactive client ถูกครอบ Mono.defer ม�
 ## Trade-offs และ open decisions
 
 ยังต้องเลือก license, embedding model/dataset provenance และ tested platforms Local precomputed embeddings ลด network/model startup cost แต่ไม่พิสูจน์ inference pipeline Optional inference ต้องแยก instructions และ resource requirements
+
+## Chapter 03: starter auto-configuration decision
+
+ผู้ใช้เลือก spring-data-opensearch-starter 3.1.4 auto-configuration + RestClientBuilderCustomizer เพื่อโฟกัส API Key แทน custom ApacheHttpClient5Transport Starter สร้าง RestClientTransport/ReactiveOpenSearchClient/data infrastructure อัตโนมัติ Builder/transport default deprecated ใน exact release นี้ ต้องเปิดเผย warnings ไม่ถือว่า latest หมายถึงทุก internal API ไม่ deprecated
+
+ตรวจ source JAR 3.1.4 ที่ resolve จริง: built-in connection-timeout คุม connection/pool acquisition; บท customize response timeout จาก socket-timeout ที่ starter รุ่นนี้ยังไม่ได้ apply เอง URI ไม่มี trailing slash, ไม่มี Basic credentials/path prefix Application ใช้ JVM default SSLContext ไม่โหลด CA เอง รายงาน runtime ของ scope ใหม่อยู่ [Chapter 03 verification](../03-api-key-authentication/VERIFICATION.md) ไม่ใช้ผลของ custom-transport implementation เดิมแทน

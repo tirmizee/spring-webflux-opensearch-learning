@@ -104,3 +104,7 @@ CI ใช้ explicit chapter matrix ใน `.github/workflows/chapter-verificat
 อย่าสั่ง stop/delete containers หรือ volumes ที่ไม่ได้สร้างในงาน Cleanup ใช้ project/resource names ของบทและไม่ใส่ volumes removal โดยปริยาย
 
 OpenSearch server ใช้ JVM ใน image แยกจาก JDK ของ app ตรวจ [Docker installation](https://docs.opensearch.org/latest/install-and-configure/install-opensearch/docker/) สำหรับ kernel/memory/security requirements ของ release ที่เลือก ไม่แก้ host settings โดยอัตโนมัติ
+
+### Chapter 03: auto-configuration verification
+
+ตาม approved exception ของ AGENTS.md ให้ตรวจ starter-created RestClient/reactive client/transport/template/converter origins และ API Key header ต่อ real OpenSearch ไม่ยืนยัน custom transport factory หรือ two-path parity Deprecated builder ของ exact release เป็น trade-off ที่ผู้ใช้ยอมรับ เปิด showDeprecation และบันทึก warnings โดยไม่ suppress; ไม่ใช้ failOnWarning เป็น required PASS gate ของบทนี้ Lifecycle เป็น native auto-configured bean lifecycle ต้องตรวจ context shutdown จริง

@@ -5,6 +5,8 @@ description: วางแผน chapter สองแนวทาง Spring Data 
 
 # Plan chapter
 
+ยึด chapter-specific approved scope ใน AGENTS.md ก่อน default two-approach contract ของ skill นี้ ไม่ทำรายละเอียดข้อยกเว้นประจำบทซ้ำใน skill
+
 ใช้เมื่อออกแบบบทใหม่หรือเปลี่ยน scope แสดงแผนใน chat ไม่เขียนไฟล์เว้นแต่ผู้ใช้ขอให้บันทึก และไม่เปลี่ยน chapter status จากคำขอ plan
 
 อ่าน [AGENTS.md](../../../AGENTS.md), [roadmap](../../../docs/learning-roadmap.md), [compatibility](../../../docs/compatibility.md), [chapter template](../../../docs/chapter-template.md) รวม [architecture](../../../docs/architecture.md) และบทที่เกี่ยวข้อง ตรวจ existing chapter/plan, working tree และ scope ที่ร้องขอ

@@ -5,6 +5,8 @@ description: สร้างหรือแก้ chapter ที่อนุม�
 
 # Implement chapter
 
+ยึด chapter-specific approved scope ใน AGENTS.md ก่อน default two-approach contract ของ skill นี้ ไม่ทำรายละเอียดข้อยกเว้นประจำบทซ้ำใน skill
+
 ใช้ใน IMPLEMENT stage ตาม [chapter workflow](../../../AGENTS.md#chapter-workflow) บทใหม่ต้องมีแผนที่ผู้ใช้อนุมัติอย่างชัดเจนก่อน หากยังไม่มีให้ใช้ plan-chapter และหยุดที่ approval gate ทำตาม approved objectives/endpoints/dependencies/tests และ acceptance criteria ไม่แก้ unrelated chapters
 
 อ่าน [AGENTS.md](../../../AGENTS.md), [roadmap](../../../docs/learning-roadmap.md), existing chapter/plan และ git state รักษางานเดิม ตรวจ [compatibility](../../../docs/compatibility.md) และยุติ dependent decisions ก่อนสร้างโค้ดที่พึ่ง decision นั้น ไม่สร้าง probe project เพิ่มเอง
