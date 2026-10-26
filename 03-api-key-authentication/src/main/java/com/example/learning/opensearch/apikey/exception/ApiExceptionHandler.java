@@ -52,7 +52,8 @@ public class ApiExceptionHandler {
             return problem(HttpStatus.BAD_GATEWAY, "OPENSEARCH_AUTHORIZATION_FAILED");
         }
 
-        return timeout ? problem(HttpStatus.GATEWAY_TIMEOUT, "OPENSEARCH_TIMEOUT")
+        return timeout
+                ? problem(HttpStatus.GATEWAY_TIMEOUT, "OPENSEARCH_TIMEOUT")
                 : problem(HttpStatus.SERVICE_UNAVAILABLE, "OPENSEARCH_UNAVAILABLE");
     }
 

@@ -85,3 +85,12 @@ Chapter 04 ใช้ standalone `spring-data-opensearch-starter` project แน�
 ใช้ mapping annotations + converter, `ReactiveIndexOperations` สำหรับ lifecycle/mapping/settings read และ `ReactiveElasticsearchOperations` สำหรับ sample save/get Dynamic settings write ใช้ `ReactiveOpenSearchClient.indices().putSettings` ต้องระบุเป็น reactive-client tier ใช้ starter auto-configuration และ timeout customizer ไม่สร้าง client/transport เอง ยอมรับ native deprecated REST defaults พร้อมเปิดเผย warnings และตรวจ shutdown
 
 Required coverage คือ generated strict mapping และ `_class`, converter round-trip/ID metadata, persisted sample/keyword multi-field, invalid numeric strings/unknown fields ที่ native server ปฏิเสธ, dynamic settings read-back, final shard/field type rejection, no auto-create, HTTP failures และ packaged smoke ทุก API เกณฑ์ Verified ใช้ gates เดิมตาม testing standards ภายใต้ approved scope นี้
+
+
+## Chapter 05 approved starter-only scope
+
+ผู้ใช้อนุมัติแผนปรับ Chapter 05 เป็น spring-data-opensearch-starter แนวทางเดียวใน chat วันที่ 2026-10-26 เป็น standalone project ใช้ local HTTP ไม่มี authentication/TLS ไม่มี official application path และไม่บังคับ two-path parity
+
+Starter สร้าง infrastructure และ repository ใช้ native reactive repository save/find, operations delete และ reactive-client index(op_type=create) สำหรับ atomic create-only โดยใช้ converter ของ Spring Data ไม่อ้าง create-only ว่า repository-native ตั้ง RefreshPolicy.NONE บน starter-created template ผ่าน BeanPostProcessor และใช้ RestClientBuilderCustomizer ปรับ response timeout/pool ไม่สร้าง client/transport/template ทดแทน คง deprecated REST defaults และตรวจ native context shutdown จริง
+
+Core scope: create/get/full-replacement upsert/delete, duplicate conflict, missing/input errors และ deterministic refresh visibility Partial update/OCC/bulk/pagination อยู่บทอื่น
