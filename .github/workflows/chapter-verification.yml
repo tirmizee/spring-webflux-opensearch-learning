@@ -25,6 +25,8 @@ jobs:
             artifact: 03-api-key-authentication
           - chapter: 04-index-mappings-and-settings
             artifact: 04-index-mappings-and-settings
+          - chapter: 05-document-crud
+            artifact: 05-document-crud
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

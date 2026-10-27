@@ -40,3 +40,5 @@ Chapter 01 ใช้ JDK 21, Docker และ Maven Wrapper; Compose/packaged-ap
 [Chapter 03: API Key Authentication](03-api-key-authentication/) ใช้ spring-data-opensearch-starter auto-configuration + API Key customizer แนวทางเดียว เป็น standalone Maven project ตาม approved exception ของบทนี้
 
 [Chapter 04: Index mappings and settings](04-index-mappings-and-settings/) ใช้ starter auto-configuration แนวทางเดียว เรียน annotations/converter, strict mapping และ dynamic/final settings บน local HTTP โดยไม่มี authentication/TLS
+
+[Chapter 05: Document CRUD](05-document-crud/) ใช้ starter แนวทางเดียว เรียน reactive repository/operations, atomic create-only, full replacement และ refresh visibility บน local HTTP

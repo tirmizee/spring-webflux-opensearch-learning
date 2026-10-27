@@ -77,3 +77,12 @@ Metadata methods ของ reactive client ถูกครอบ Mono.defer ม�
 ใช้ exact baseline เดียวกับ Chapter 03: Boot 4.1.2, starter 3.1.4, SDK 3.10.0 และ server 3.9.0 บทนี้เพิ่มการตรวจ annotations, converter และ reactive index/document operations พร้อม native settings API ผล runtime และ platform จำกัดตาม [Chapter 04 verification](../04-index-mappings-and-settings/VERIFICATION.md) ไม่ขยายผลไปยัง CRUD/vector/hybrid features ที่ยังไม่ทดสอบ
 
 `ReactiveIndexOperations`/`ReactiveElasticsearchOperations` เป็น Spring Data abstractions โดย implementation เป็น OpenSearch `ReactiveIndicesTemplate`/`ReactiveOpenSearchTemplate` ไม่ใช้ Elasticsearch Java client Dynamic settings write ใช้ native reactive-client tier และ default REST transport ของ starter ยังคง deprecated ไม่มีการเปลี่ยน client architecture เพื่อซ่อน warnings
+
+
+## Chapter 05: starter CRUD scope
+
+ใช้ candidate baseline Boot 4.1.2, starter 3.1.4, SDK 3.10.0 และ server 3.9.0 ตาม approved starter-only scope เพิ่ม reactive repository, operations delete, converter-backed create-only และ refresh visibility ตรวจ dependency/API/runtime evidence ของบทแยกใน [Chapter 05 verification](../05-document-crud/VERIFICATION.md) ไม่ใช้ผลบท 04 แทน
+
+Exact source ของ starter/core 3.1.4 และ Spring Data Elasticsearch 6.1.2 รองรับ ReactiveElasticsearchRepository พร้อม ReactiveOpenSearchTemplate; save เป็น upsert และไม่มี create-only option จึงใช้ ReactiveOpenSearchClient.index พร้อม OpType.Create ส่วน repository doRefresh เรียก refresh เมื่อ template policy เป็น null บทนี้ตั้ง NONE อย่างชัดเจนผ่าน BeanPostProcessor โดยไม่สร้าง template ทดแทน
+
+Chapter 05 ผ่าน 43 unit/HTTP/configuration tests + 10 real-server ITs พร้อม Compose/packaged-app smoke 34 HTTP assertions และ README examples บน macOS arm64 วันที่ 2026-10-26 ตาม [รายงาน](../05-document-crud/VERIFICATION.md) จำกัดเฉพาะ starter CRUD scope นี้

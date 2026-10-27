@@ -1,0 +1,19 @@
+@base = http://localhost:8085/api/spring-data
+
+### Create-only (201); repeat -> 409
+POST {{base}}/products/p-001
+Content-Type: application/json
+
+< ../fixtures/product.json
+
+### Realtime GET (200; missing -> 404)
+GET {{base}}/products/p-001
+
+### Full replacement / upsert (200)
+PUT {{base}}/products/p-001
+Content-Type: application/json
+
+< ../fixtures/product-replacement.json
+
+### Delete (204; repeat -> 404)
+DELETE {{base}}/products/p-001

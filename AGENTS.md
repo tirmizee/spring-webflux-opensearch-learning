@@ -8,6 +8,8 @@ Chapter 03 `03-api-key-authentication` ใช้ **spring-data-opensearch-starte
 
 Chapter 04 `04-index-mappings-and-settings` ใช้ **spring-data-opensearch-starter แนวทางเดียว** ตาม approved plan โดยไม่มี authentication/TLS ใช้ local HTTP และ starter auto-configuration + response-timeout customizer ไม่สร้าง client/transport เอง ไม่มี official application path หรือ two-path parity ตรวจ mapping annotations/converter, reactive operations และ dynamic settings ผ่าน reactive-client tier ตาม [contract exception](docs/dual-approach.md#chapter-04-approved-starter-only-scope)
 
+Chapter 05 `05-document-crud` ใช้ **spring-data-opensearch-starter แนวทางเดียว** ตามแผนที่ผู้ใช้อนุมัติ ไม่มี official application path หรือ two-path parity ใช้ local HTTP ไม่มี authentication/TLS ให้ starter สร้าง client/transport/template/converter และ reactive repository ใช้ repository สำหรับ save/findById, operations สำหรับ delete และ reactive-client tier สำหรับ atomic create-only ผ่าน converter ปรับ response timeout/pool ด้วย customizer และตั้ง RefreshPolicy.NONE บน starter-created template ไม่สร้าง infrastructure ทดแทน คง deprecated native REST transport และตรวจ shutdown จริง ดู [contract exception](docs/dual-approach.md#chapter-05-approved-starter-only-scope)
+
 ## Scope และการทำงาน
 
 - อธิบายและเขียนเอกสารการเรียนรู้เป็นภาษาไทย คง technical terms, code และ identifiers เป็น English

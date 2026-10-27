@@ -17,3 +17,7 @@ Chapter 01 ใช้ @WebFluxTest และ @SpringBootTest/SpringExtension จ�
 ## Consequences และขอบเขต
 
 ข้อกำหนด test platform ของ Chapter 01 เปลี่ยนจาก JUnit 5 เป็น Boot-managed JUnit 6 การเลือก platform ของบทใหม่ต้องตรวจ requirement และ compatibility อีกครั้ง การ resolve ไม่ใช่ runtime verification ดูผลจริงที่ [Chapter 01 report](../../01-basic-connection/VERIFICATION.md)
+
+## Chapter 05 extension — 2026-10-26
+
+ผู้ใช้อนุมัติ Boot-managed JUnit 6 สำหรับ Chapter 05 ใน approved starter-only plan ใช้ Boot 4.1.2 โดยไม่ override API/engine/platform ลงเป็น JUnit 5 ตรวจ resolved versions และผลจริงใน [Chapter 05 report](../../05-document-crud/VERIFICATION.md)
